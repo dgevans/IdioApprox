@@ -41,14 +41,14 @@ class steadystate(object):
         res = root(self.SteadyStateRes,np.ones(nY))
         if not res.success:
             raise Exception('Could not find steady state')
-        self.Y = res.Y
+        self.Y = res.x
         
     def SteadyStateRes(self,Y):
         '''
         For a given vector of aggregates returns the steady state residual
         '''
         y_i = Finv(Y,self.z_i)
-        return GSS(Y,y_i,self.z_i)
+        return GSS(Y,y_i)
         
     def get_Y(self):
         '''

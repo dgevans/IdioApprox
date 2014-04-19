@@ -9,6 +9,7 @@ import numpy as np
 #from SparseGrid import interpolator
 from Spline import Spline
 import numdifftools as nd
+import pycppad as ad
 
 def hstack(tup):
     '''
@@ -56,8 +57,16 @@ class interpolate_wrapper(object):
         '''
         Reshapes F
         '''
-        self.F = self.F.reshape(*args)
-        return self
+        newF = self.F.reshape(*args)
+        return interpolate_wrapper(newF,self.N)
+        
+    def transpose(self,*axes):
+        '''
+        Creates transpolse
+        '''
+        newF = self.F.transpose(*axes)
+        return interpolate_wrapper(newF,self.N)
+    
     def __len__(self):
         '''
         return length
@@ -106,7 +115,7 @@ class interpolator_factory(object):
         else:
             return interpolate_wrapper(np.array(F),np.atleast_2d(X).shape[1]).reshape(Fshape)
             
-def Hessian(F,x0):
+def nd_Hessian(F,x0):
     '''
     Computes the hessian of F
     '''
@@ -116,10 +125,33 @@ def Hessian(F,x0):
     for i in range(m):
         HF[i] = nd.Hessian(lambda x:F(x)[i])(x0)
     
-    #account for duplicating the off diagonals    
-    for i in range(n):
-        HF[:,i,i] *=2.
-    return HF/2
+    return HF
+    
+    
+def ad_Jacobian(F,x0):
+    '''
+    Computes Jacobian using automatic differentiation
+    '''
+    a_x = ad.independent(x0)
+    a_F = F(a_x)
+    return ad.adfun(a_x,a_F).jacobian(x0)
+
+def ad_Hessian(F,x0):
+    '''
+    Computes Hessian of F using automatic differentiation
+    '''
+    a_x = ad.independent(x0)
+    a_F = F(a_x)
+    n = x0.shape[0]
+    m = a_F.shape[0]
+    HF = np.empty((m,n,n))
+    I = np.eye(m)
+    
+    adF = ad.adfun(a_x,a_F)
+    for i in range(m):
+        HF[i,:,:] = adF.hessian(x0,I[i])
+    
+    return HF
 
 from hashlib import sha1
 
@@ -127,6 +159,7 @@ from numpy import all, array
 
 
 class hashable_array(np.ndarray):
+    __hash = None
     def __new__(cls, values):
         this = np.ndarray.__new__(cls, shape=values.shape, dtype=values.dtype)
         this[...] = values
@@ -139,6 +172,8 @@ class hashable_array(np.ndarray):
         return all(np.ndarray.__eq__(self, other))
     
     def __hash__(self):
+        if self.__hash == None:
+            self.__hash = int(sha1(self).hexdigest(), 16)
         return self.__hash
     
     def __setitem__(self, key, value):
@@ -148,4 +183,4 @@ def quadratic_dot(Q,a,b):
     '''
     Performs to the dot product appropriately
     '''
-    return np.tensordot(np.tensordot(A,a,(1,0)),b,(1,0))
+    return np.tensordot(np.tensordot(Q,a,(1,0)),b,(1,0))

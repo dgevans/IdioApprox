@@ -69,7 +69,7 @@ class approximate(object):
         
         x = []
         for i in range(nz):
-            x.append(np.linspace(0.95*min(Gamma[i,:]),1.05*max(Gamma[i,:]),20))
+            x.append(np.linspace(min(Gamma[:,i])-0.05,0.05+max(Gamma[:,i]),20))
         self.zgrid =  Spline.makeGrid(x)
         
         #precompute Jacobians and Hessians

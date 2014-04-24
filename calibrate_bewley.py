@@ -14,33 +14,33 @@ T = 0.2
 tau = 0.2
 
 
-n = 1
-ny = 4
-ne = 2
-nY = 2
-nz = 1
-nv = 1
+n = 1 # number of measurability constraints
+ny = 4 # number of individual controls (m_{t},c_{t},l_{t},x_{t-1}) Note that the forward looking terms are at the end
+ne = 2 # number of Expectation Terms (E_t u_{c,t+1} and E_{t}x_{t-1} [This makes the control x_{t-1} indeed time t-1 measuable])
+nY = 2 # Number of aggregates (alpha_1,alpha_2)
+nz = 1 # Number of individual states (m_{t-1})
+nv = 1 # number of forward looking terms (x_t)
 
 def F(w):
     '''
-    Idiosyncratic equations
+    Individual first order conditions
     '''
-    m,c,l,x_ = w[:4]
-    EUc,Ex_ = w[4:6]
-    alpha1,alpha2 = w[6:8]
-    m_ = w[8]
-    x = w[9]
-    eps = w[10]
+    m,c,l,x_ = w[:4] #y
+    EUc,Ex_ = w[4:6] #e
+    alpha1,alpha2 = w[6:8] #Y
+    m_ = w[8] #z
+    x = w[9] #v
+    eps = w[10] #shock
     
     Uc = c**(-sigma)
     Ul = -l**(gamma)
     
     ret = np.empty(5,dtype=w.dtype)
-    ret[0] = x_ - Ex_
-    ret[1] = x_*Uc/(beta*EUc) - Uc*(c-T) - Ul*l - x
-    ret[2] = alpha2 - m*Uc
-    ret[3] = (1-tau)*np.exp(eps)*Uc + Ul
-    ret[4] = alpha1 - m_*EUc
+    ret[0] = x_ - Ex_ # x is independent of eps
+    ret[1] = x_*Uc/(beta*EUc) - Uc*(c-T) - Ul*l - x #impl
+    ret[2] = alpha2 - m*Uc #defines m
+    ret[3] = (1-tau)*np.exp(eps)*Uc + Ul #wage
+    ret[4] = alpha1 - m_*EUc # bond pricing
     
     return ret
     
@@ -52,16 +52,16 @@ def G(w):
     eps = w[10]
     
     ret = np.empty(2,dtype=w.dtype)
-    ret[0] = 1 - m
-    ret[1] = c - np.exp(eps) * l
+    ret[0] = 1 - m #normalizing for Em=1
+    ret[1] = c - np.exp(eps) * l # resources
     
     return ret
     
 def f(y):
     '''
-    Expectational equations
+    Expectational equations that define e=Ef(y)
     '''
-    logm,c,l,x_ = y
+    m,c,l,x_ = y
     
     ret = np.empty(2,dtype=y.dtype)
     ret[0] = c**(-sigma)
@@ -89,7 +89,7 @@ def GSS(YSS,y_i):
     '''
     Aggregate conditions for the steady state
     '''
-    logm_i,c_i,l_i,x_i = y_i
+    m_i,c_i,l_i,x_i = y_i
     alpha1,alpha2 = YSS
     
     return np.hstack((

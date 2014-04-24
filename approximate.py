@@ -36,7 +36,7 @@ def calibrate(Para):
     global interpolate
     F,G,f = Para.F,Para.G,Para.f
     ny,ne,nY,nz,nv,n = Para.ny,Para.ne,Para.nY,Para.nz,Para.nv,Para.n
-    Ivy,Izy = np.zeros((nv,ny)),np.zeros((nz,ny))
+    Ivy,Izy = np.zeros((nv,ny)),np.zeros((nz,ny)) # Ivy given a vector of y_{t+1} -> v_t and Izy picks out the state
     Ivy[:,-nv:] = np.eye(nv)
     Izy[:,:nz] = np.eye(nz)
         
@@ -53,7 +53,7 @@ def calibrate(Para):
     
     sigma = Para.sigma_e
     
-    interpolate = utilities.interpolator_factory([3]*nz)
+    interpolate = utilities.interpolator_factory([3]*nz) # cubic interpolation
     steadystate.calibrate(Para)
 
 class approximate(object):
@@ -69,7 +69,7 @@ class approximate(object):
         
         x = []
         for i in range(nz):
-            x.append(np.linspace(0.95*min(Gamma[i,:]),1.05*max(Gamma[i,:]),20))
+            x.append(np.linspace(0.95*min(Gamma[:,i]),1.05*max(Gamma[:,i]),20))
         self.zgrid =  Spline.makeGrid(x)
         
         #precompute Jacobians and Hessians
@@ -106,19 +106,17 @@ class approximate(object):
         
     def compute_dy(self,z_i):
         '''
-        Computes dy
+        Computes dy w.r.t z_i, eps, Y
         '''
         
         DF = self.DF(z_i)
         df = self.df(z_i)
         
         dy = {}
-        DFi = DF[n:]
+        DFi = DF[n:] # pick out the relevant equations from F. Forexample to compute dy_{z_i} we need to drop the first equation
         dy[z] = np.linalg.solve(DFi[:,y] + DFi[:,e].dot(df)+DFi[:,v].dot(Ivy),
                                     -DFi[:,z])
         DFi = DF[:-n,:]
-        Izy = np.zeros((nz,ny))
-        Izy[:nz,:nz] = np.eye(nz)
         dy[eps] = np.linalg.solve(DFi[:,y] + DFi[:,v].dot(Ivy).dot(dy[z]).dot(Izy),
                                     -DFi[:,eps])
                                     
@@ -152,9 +150,9 @@ class approximate(object):
         d = {}
         df = self.df(z_i)
         
-        d[y,S],d[y,eps] = np.hstack((dy[z](z_i),dy[Y](z_i))),dy[eps](z_i)
+        d[y,S],d[y,eps] = np.hstack((dy[z](z_i),dy[Y](z_i))),dy[eps](z_i) # first order effect of S and eps on y
     
-        d[e,S],d[e,eps] = df.dot(d[y,S]), np.zeros((ne,1))
+        d[e,S],d[e,eps] = df.dot(d[y,S]), np.zeros((ne,1)) # first order effect of S on e
     
         d[Y,S],d[Y,eps] = np.hstack(( np.zeros((nY,nz)), np.eye(nY) )),np.zeros((nY,1))
         

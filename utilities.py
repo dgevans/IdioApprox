@@ -8,7 +8,6 @@ Created on Wed Apr  2 17:26:22 2014
 import numpy as np
 #from SparseGrid import interpolator
 from Spline import Spline
-import numdifftools as nd
 import pycppad as ad
 
 def hstack(tup):

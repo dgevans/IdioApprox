@@ -1,0 +1,263 @@
+\documentclass[thmsb,11pt]{article}
+\usepackage{amsfonts}
+\usepackage{appendix}
+\usepackage[pagewise,displaymath, mathlines]{lineno}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{refcount}
+\usepackage{natbib}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{epstopdf}
+\setcounter{MaxMatrixCols}{10}
+\newtheorem{theorem}{Theorem}
+\newtheorem{acknowledgement}[theorem]{Acknowledgement}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{assumption}{Assumption}
+\newtheorem{axiom}{Axiom}
+\newtheorem{case}[theorem]{Case}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{conclusion}[theorem]{Conclusion}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{corollary}{Corollary}
+\newtheorem{criterion}[theorem]{Criterion}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{summary}[theorem]{Summary}
+\newtheorem{example}{Example}
+\newtheorem{exercise}{Exercise}
+\newtheorem{notation}{Notation}
+\newtheorem{remark}{Remark}
+\newcommand{\bmat}{\begin{matrix}}
+\newcommand{\emat}{\end{matrix}}
+\newcommand{\ov}{\overline}
+\newcommand{\un}{\underline}
+\newcommand{\EE}{\mathbb E}
+\newenvironment{proof}[1][Proof]{\noindent \textbf{#1.} }{\  \rule{0.5em}{0.5em}}
+\topmargin=-1cm
+\oddsidemargin=-0cm
+\textheight=22.2cm
+\textwidth=16cm
+\setcounter{secnumdepth}{2}
+\pagestyle{plain}
+\setcounter{figure}{0}
+%\setpagewiselinenumbers
+%\linenumbers
+\begin{document}
+
+\title{\textbf{ Redistribution with a continuum of agents}}
+\date{}
+\maketitle
+\section{Introduction}
+We study optimal affine taxation in an economy with continuum of agents that face (un-insurable) shocks to their idiosyncratic labor productivities. We first specify the problem without aggregate risk.
+\section{Ramsey planner's problem}
+Given a joint distribution $\Gamma_0(x_{0},m_{0},e_{0})$ over marginal utilities adjusted assets, scaled marginal  utilities and past productivities, the Ramsey allocation solves the following problem from t$>$0.
+\begin{equation}
+\label{eq-obj}
+\max_{c^i_{t},l^i_t,x^i_t,m^i_t} \sum_{t}\beta^t\int \omega^i  u(c^i_t,l^i_t)di 
+\end{equation}
+
+subject to 
+
+\begin{subequations}
+
+\begin{equation}
+\label{eq-imp}
+\frac{x^i_{t-1}u^i_{c,t}}{\beta\mathbb{E}_{t-1}u^i_{c,t}}=u^i_{c,t}(c^i_t-T_t)+u^i_{l,t}l^i_{t}+x^i_t
+\end{equation}
+
+
+\begin{equation}
+\label{eq-Bond_1}
+\alpha^1_{t}=m^i_{t}\mathbb{E}_{t}u^i_{c,t+1}
+\end{equation}
+
+\begin{equation}
+\label{eq-Bond_2}
+\alpha^2_{t}=m^i_{t}u^i_{c,t}
+\end{equation}
+
+\begin{equation}
+\label{eq-wages}
+-u^i_{l,t}=(1-\tau_t) u^i_{c,t} e^i_t
+\end{equation}
+
+
+\begin{equation}
+\label{eq-productivity}
+e^i_t=(1-\nu)\bar{e}+\nu e^i_{t-1}+q\epsilon^i_t
+\end{equation}
+
+\begin{equation}
+\label{eq-norm-m}
+\int m^i_t di=1
+\end{equation}
+
+
+
+\begin{equation}
+\label{eq-resources}
+\int l^i_t e^i_t di = \int c^i_t di+g
+\end{equation}
+
+
+
+\end{subequations}
+
+Equations \eqref{eq-Bond_1} and \eqref{eq-Bond_2} ensure that individual Euler equations hold. The FOCs of this problem are summarized below:
+   \begin{subequations}
+	   \label{sys-FOC}	   
+	   	\begin{equation}
+	   	\label{eq-foc_x}
+	   	\mu^i_{t-1}=\mathbb{E}_{t-1}\frac{u^i_{c,t}}{\mathbb{E}_{t-1}u^i_{c,t}}\mu^i_t
+	   	\end{equation}
+
+	   	 \begin{equation}
+	   	 	\label{eq-foc_l}
+	   	 	\omega^i u^i_{l,t}-\mu^i_t[u^i_{ll,t}l^i_t +u^i_{l,t}]-\phi^i_t u^i_{ll,t}+\lambda_t e^i_t=0   	
+	   	\end{equation}    	
+
+
+	   	\begin{equation}
+	   		\label{eq-foc_m}
+	   	   	\rho^i_{2,t}u^i_{c,t}+\rho^i_{1,t}\mathbb{E}_{t}u^i_{c,t+1}+\eta_t=0
+	   	\end{equation}
+
+
+	   	\begin{equation}
+	   		\label{eq-foc_c}
+	   	  \omega^i u^i_{c,t}+x^i_{t-1}\frac{u^i_{cc,t}}{\beta \mathbb{E}_{t-1}u^i_{c,t}}\left[\mu^i_{t}-\mu^i_{t-1}\right]-\mu^i_t[u^i_{cc,t}c^i_t+u^i_{c,t}]+\beta^{-1}\rho^i_{1,t-1}m^i_{t-1}u^i_{cc,t}+\rho^i_{2,t}m^i_tu^i_{cc,t}-\phi^i_t e^i_t(1-\tau_t)u^i_{cc,t}-\lambda_t=0    	
+	   	 \end{equation}
+
+
+	      \begin{equation}
+	      	\label{eq-foc_tau}
+	       \int \phi^i_t u^i_{c,t}e^i_t di =0  	
+	      \end{equation}       
+
+
+	   	\begin{equation}
+	   	\label{eq-foc_T}
+	   	\int u^i_{c,t}\mu^i_tdi=0
+	   	\end{equation}  
+
+
+	        \begin{equation}
+	        	\label{eq-for_alpha}
+	           	\int \rho^i_{j,t}di=0 \quad j=1,2
+	        \end{equation}          
+
+
+
+	   \end{subequations}	
+
+The solution to these FOC can be expressed recursively using individual states $\xi^i_{t-1}=[\mu^i_{t-1},m^i_{t-1},e^i_{t-1}]$, shocks $\epsilon^i_t$ and aggregate state $\Gamma_{t-1}(\xi^i_{t-1})$. 
+
+We first derive a simple expression for taxes. The FOC for labor \eqref{eq-foc_l} can be re-written as 
+
+
+ \[
+\omega^i u^i_{c,t}\frac{u^i_{l,t} e^i_t}{u^i_{ll,t}}- \mu^i_t u^i_{c,t}e^i_t[l^i_t +\frac{u^i_{l,t}}{u^i_{ll,t}}]+\frac{\lambda_t u^i_{c,t}(e^i_t)^2}{u^i_{ll,t}}=\phi^i_tu^i_{c,t}e^i_t    	
+\]
+
+ Suppose $u(c,l)=\frac{c^{1-\sigma}}{1-\sigma}-\frac{l^{1+\gamma}}{1+\gamma}$. The above expression simplifies to
+
+
+ \[
+\frac{ \omega^i u^i_{c,t}y^i_t}{\gamma}- \mu^i_t u^i_{c,t}y^i_t[1 +\frac{1}{\gamma}]-\lambda_t\gamma^{- 1}\frac{y^i_t }{1-\tau_t}=\phi^i_tu^i_{c,t}e^i_t    	
+ \]
+
+Define $w_{i,t}=u^i_{c,t}[\omega^i-\mu^i_t(1+\gamma)]$ and $\bar{w}_{t} = \int u^i_{c,t}\omega^i di$ and $\bar{w}_{i,t}=\frac{g_{i,t}}{\bar{w}_t}$.
+
+Integrating  over i's we have
+
+ 
+\begin{equation}
+	\label{eq-labor_taxes}
+\frac{1}{1-\tau_t}=\frac{\hat{Y}_t}{Y_t} \frac{\bar{w}_t }{\lambda_t}
+\end{equation}   
+
+Where $Y_t=\int y^i_t di$ and $\hat{Y}_t=\int y^i_t \bar{w}_{i,t}di$
+\section{Ricardian Equivalence}
+Note that, using equation \eqref{eq-Bond_1}, equation \eqref{eq-foc_T} can be rewritten as 
+\[
+	\int \frac{\mu^i_t}{m^i_t} = 0
+\]  Moreover, equation \eqref{eq-foc_x} can be expressed as
+\[
+\frac{\alpha^1_{t-1} \mu^i_{t-1}}{m^i_{t-1}} = \alpha^2_t \EE_{t-1} \frac{\mu^i_t}{m^i_t}
+\]By integrating both sides with respect to $i$, we obtain
+\[
+	\alpha^1_{t-1} \int \frac{\mu^i_{t-1}}{m^i_{t-1}}di = \alpha^2_t\int \frac{\mu^i_{t}}{m^i_t} di
+\]  This implies that if 
+\[
+	\int \frac{\mu^i_{t-1}}{m^i_{t-1}} = 0
+\]is satisfied for time $t-1$ we have then
+\[
+	\int \frac{\mu^i_t}{m^i_t} = 0
+\] thus equation \eqref{eq-foc_T} is redundant and we can choose $T$ to be any value.  For simplicity we set $T=0$.
+
+\section{Deterministic Steady State}
+We first look at an economy with $q=0$. Given a joint distribution $\Gamma_0(\xi)$ the non-stochastic steady state is described by an allocation $c(\xi), l(\xi), x(\xi)$ and aggregate labor taxes $\tau$. 
+
+Suppose $\Gamma_0(\xi)$ satisfies the following two properties
+   \begin{subequations}
+   \label{sys-gamma_0_prop}
+	\begin{equation}
+	\int m^i di=1
+	\end{equation}
+	\begin{equation}
+	\int \frac{\mu^i}{m^i} di=0
+	\end{equation}
+   \end{subequations}
+Given this we can conclude that the FOC can be satisfied with $\alpha^1=\alpha^2$, $\eta=0$ and $\rho^i_{1}=-\rho^i_2$. To obtain the deterministic steady state we add a few auxiliary variables $\phi(\xi)$,$\rho_1(\xi)$ and aggregates $\lambda$ and $\alpha$. The steady state is given by the following set of equations.  The first set solves for individual policies for a guess of $(\alpha,\lambda,\tau)$ and the second set solves the aggregates
+
+   \begin{subequations}
+   \label{sys-steady-state-deterministic-individial}
+   	\begin{equation}
+   	\label{eq-ss_1}
+   	\alpha=m^i u^i_c
+   	\end{equation}
+
+	\begin{equation}
+   	\label{eq-ss_2}
+   	-u^i_l=(1-\tau)u^i_ce^i
+   	\end{equation}
+   	
+\begin{equation}
+   	\label{eq-ss_3}
+   	\gamma \phi^i = l^i[\omega^i -\mu^i(1+\gamma)] +\frac{\lambda e^i}{u^i_{ll}}
+   	\end{equation}
+
+   	
+\begin{equation}
+   	\label{eq-ss_4}
+	   	   u^i_{c}[\omega^i-\mu^i(1-\sigma)]+\rho^i_{1}m^i u^i_{cc}(\beta^{-1}-1)-\phi^i_t e^i(1-\tau)u^i_{cc}-\lambda=0    	
+   	\end{equation}
+   \end{subequations}
+The aggregates $(\alpha,\tau,\lambda)$ solve
+   \begin{subequations}
+   \label{sys-steady-state-deterministic-aggregates}
+   	\begin{equation}
+   	\label{eq-ss_agg_1}
+   	\int l^i_t e^i_t di = \int c^i_t di+g
+   	\end{equation}
+	
+	\begin{equation}
+   	\label{eq-ss_agg_2}
+	\frac{1}{1-\tau_t}=\frac{\hat{Y}_t}{Y_t} \frac{\bar{w}_t }{\lambda_t}   	
+   	\end{equation}
+
+	\begin{equation}
+   	\label{eq-ss_agg_3}
+   	\int \rho^i_1 di=0
+   	\end{equation}
+
+   \end{subequations}
+
+\end{document}

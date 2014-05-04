@@ -1,0 +1,11 @@
+
+<<Micro.nb;
+(* Eliminate the zero income events *)
+p = 0; 
+\[CapitalTheta]Vec     = \[CapitalXi]Vec;
+\[CapitalTheta]VecProb = \[CapitalXi]VecProb;
+
+PrependTo[\[Alpha]Vec,0.001]; (* Useful for precision near kink point *)
+Do[SolveAnotherPeriod,{PeriodsToAdd}];
+
+

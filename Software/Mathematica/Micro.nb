@@ -1,0 +1,13 @@
+{\[Dalet],G,p} = {1,1.03,0.005};
+\[CapitalLambda] = G;
+MacroModel=False;
+<<Common.nb;
+(* Triple exponential growth to a=10 picks a good set of values for \[Alpha] *)
+\[Alpha]Vec = Table[Exp[Exp[Exp[\[Alpha]Loop]-1]-1]-1 \
+//N,{\[Alpha]Loop,0,Log[Log[Log[10+1]+1]+1],Log[Log[Log[10+1]+1]+1]/(n-1)}];
+\[CapitalXi]Vec    =\[CapitalPsi]Vec     = {0.90,1.00,1.10};
+\[CapitalXi]VecProb=\[CapitalPsi]VecProb = {0.25,0.50,0.25};
+\[CapitalTheta]Vec     = Prepend[\[CapitalXi]Vec    / (1-p),0.];
+\[CapitalTheta]VecProb = Prepend[\[CapitalXi]VecProb  (1-p),p ];
+R[k_] := 1.04;
+W[k_] := 1.00;

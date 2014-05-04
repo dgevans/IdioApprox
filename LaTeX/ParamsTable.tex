@@ -1,0 +1,38 @@
+%\documentclass[titlepage,12pt,letterpaper]{article} \usepackage{packages} \newboolean{StandAlone}\setboolean{StandAlone}{true} \newboolean{PrintAnswers}\setboolean{PrintAnswers}{false}\begin{document}
+
+\begin{table}
+\caption{Parameter Values}
+\label{table:params}
+\begin{center}
+\begin{tabular}{ccl}
+\hline \multicolumn{3}{c}{Parameters Common to All Models} 
+\\ \hline
+   $\rho$   & 2     & Relative Risk Aversion
+\\ $\beta$  & 0.96  & Annual Discount Factor
+\\ $e$      & 1 & Labor supply/effort (fixed)
+\\ $\vec{\Psi}$   & $\{0.90,1.00,1.10\}$ & Permanent Shock Realizations
+\\ $\Pr(\vec{\Psi})$ & $\{0.25,0.50,0.25\}$ & Permanent Shock Probabilities
+\\ \hline \multicolumn{3}{c}{Macro Model Parameters}
+\\ \hline 
+   $\daleth$ & 0.90 & Depreciation Factor
+\\ $G$       & 1.01  & Exogenous Aggregate Productivity Growth Factor
+\\ $\varepsilon$  & 0.36  & Capital Share in Production
+\\ \hline \multicolumn{3}{c}{Micro Model Parameters} 
+\\ \hline 
+   $\daleth$ & 1     & Depreciation Factor
+\\ $G$       & 1.03  & Trend Individual Wage Growth Factor
+\\ $R$       & 1.04  & Real Interest Rate
+\\ $W$       & 1.00  & Wage Rate 
+\\ $\vec{\Xi}$   & $\{0.90,1.00,1.10\}$ & Transitory Shock Realizations for Employed
+\\ $\Pr(\vec{\Xi}|\Theta>0)$ & $\{0.25,0.50,0.25\}$ & Transitory Shock Probabilities for Employed
+\\ \hline \multicolumn{3}{c}{Parameter Unique to Unemployment Model}
+\\ \hline 
+$\wp$       & 0.005 & Probability of Unemployment Spell
+\end{tabular}
+\end{center}
+\end{table}
+
+\ifthenelse{\boolean{StandAlone}}{\end{document}}{}  
+
+
+

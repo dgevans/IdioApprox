@@ -1,0 +1,6 @@
+
+<<Macro.nb;
+\[CapitalPsi]Vec     = {1.};
+\[CapitalPsi]VecProb = {1.};
+
+Do[SolveAnotherPeriod,{PeriodsToAdd}];

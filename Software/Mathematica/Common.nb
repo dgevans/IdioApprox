@@ -1,0 +1,33 @@
+uP[c_]:= If[c>0,(*then*) c^-\[Rho],(* else *)\[Infinity]];
+nP[z_]:= z^-(1/\[Rho]);
+\[GothicV]P[at_] := \[Dalet] \[Beta] Sum[
+      \[CapitalPsi]tp1 = \[CapitalPsi]Vec[[\[CapitalPsi]Loop]];
+      \[CapitalLambda]tp1 = G \[CapitalPsi]tp1;
+      \[CapitalTheta]tp1 = \[CapitalTheta]Vec[[\[CapitalTheta]Loop]];
+      ktp1 = \[Dalet] at/\[CapitalLambda]tp1;
+      ltp1 = \[CapitalTheta]tp1 eEffort;
+      mtp1 = If[MacroModel && ktp1== 0,0,ktp1 R[ktp1] + ltp1 W[ktp1]];
+      \[CapitalPsi]VecProb[[\[CapitalPsi]Loop]] \[CapitalTheta]VecProb[[\[CapitalTheta]Loop]] R[ktp1] uP[\[CapitalLambda]tp1 Last[cInterpFunc][mtp1]]
+  ,{\[CapitalPsi]Loop,Length[\[CapitalPsi]Vec]}
+  ,{\[CapitalTheta]Loop,Length[\[CapitalTheta]Vec]}
+]; (* End Sum *)
+cInterpFunc={Interpolation[{{0.,0.},{1000.,1000.}},InterpolationOrder->1]};
+SolveAnotherPeriod:=Block[{},
+  AppendTo[cInterpFunc,
+    Interpolation[
+      Union[
+        Chop[
+          Prepend[
+            Table[
+              \[Alpha]=\[Alpha]Vec[[\[Alpha]Loop]];
+              \[Chi]=nP[\[GothicV]P[\[Alpha]]];
+              \[Mu]=\[Alpha]+\[Chi];
+              {\[Mu],\[Chi]}
+            ,{\[Alpha]Loop,Length[\[Alpha]Vec]}]
+          ,{0.,0.}]  (* Prepending {0,0} handles potential liquidity constraint *)
+        ]            (* Chop cuts off numerically insignificant digits *)
+      ]              (* Union removes duplicate entries *)
+    ,InterpolationOrder->1] (* Piecewise linear interpolation *)
+  ];                 (* End of AppendTo *)
+];                   (* End of SolveAnotherPeriod *)
+{\[Beta],\[Rho],n,eEffort,PeriodsToAdd} = {0.96,2,20,1,99};

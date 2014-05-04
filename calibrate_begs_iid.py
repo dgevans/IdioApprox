@@ -13,11 +13,11 @@ sigma_e = 0.1
 
 
 n = 2 # number of measurability constraints
-ny = 9 # number of individual controls (m_{t},c_{t},l_{t},x_{t-1}) Note that the forward looking terms are at the end
-ne = 4 # number of Expectation Terms (E_t u_{c,t+1} and E_{t}x_{t-1} [This makes the control x_{t-1} indeed time t-1 measuable])
-nY = 5 # Number of aggregates (alpha_1,alpha_2)
-nz = 2 # Number of individual states (m_{t-1})
-nv = 2 # number of forward looking terms (x_t)
+ny = 9 # number of individual controls (m_{t},mu_{t},c_{t},l_{t},rho1_,rho2,phi,x_{t-1},kappa_{t-1}) Note that the forward looking terms are at the end
+ne = 4 # number of Expectation Terms (E_t u_{c,t+1}, E_t u_{c,t+1}mu_{t+1} E_{t}x_{t-1 E_t rho_{1,t-1}} [This makes the control x_{t-1},rho_{t-1} indeed time t-1 measuable])
+nY = 5 # Number of aggregates (alpha_1,alpha_2,tau,eta,lambda)
+nz = 2 # Number of individual states (m_{t-1},mu_{t-1})
+nv = 2 # number of forward looking terms (x_t,rho1_t)
 
 def F(w):
     '''

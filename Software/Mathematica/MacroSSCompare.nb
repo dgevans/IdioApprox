@@ -1,0 +1,44 @@
+
+(* This notebook compares the solution to the macro model at the target to the perfect foresight solution *)
+(* It should be run after obtaining a solution to the macro model under some set of parameter values      *)
+(* Corresponding derivations can be found in MacroSSCompare.tex in the /text directory *)
+
+kSS =  ((((G^\[Rho])/(\[Beta] \[Dalet]))-1)/\[CurlyEpsilon])^(1/(\[CurlyEpsilon]-1));
+
+mSS = R[kSS] kSS + \[ScriptCapitalW]SS;
+\[ScriptCapitalR]SS =  1+\[CurlyEpsilon] kSS^(\[CurlyEpsilon]-1);
+\[ScriptCapitalW]SS = (1-\[CurlyEpsilon]) kSS^\[CurlyEpsilon];
+\[GothicCapitalR]SS = \[ScriptCapitalR]SS \[Dalet];
+MPCPartEqbm = (1-((\[GothicCapitalR]SS \[Beta])^(1/\[Rho]))/\[GothicCapitalR]SS);
+hSS   = 1/(1-G/\[GothicCapitalR]SS);
+cSS1  = (kSS \[ScriptCapitalR]SS + hSS \[ScriptCapitalW]SS)MPCPartEqbm;
+cSS2  = (mSS + (hSS-1)\[ScriptCapitalW]SS) MPCPartEqbm;
+
+mFromk[k_] := k+k^\[CurlyEpsilon];
+mTarget = mSeek /. FindRoot[mFromk[(mSeek-Last[cInterpFunc][mSeek])         \[Dalet]/G] == mSeek,{mSeek,0.95 mSS,1.05 mSS}];
+kTarget = kSeek /. FindRoot[(mFromk[kSeek]-Last[cInterpFunc][mFromk[kSeek]])\[Dalet]/G  == kSeek,{kSeek,0.95 kSS,1.05 kSS}];
+cTarget = Last[cInterpFunc][mTarget];
+\[ScriptCapitalR]Target = R[kTarget];
+\[ScriptCapitalW]Target = W[kTarget];
+\[GothicCapitalR]Target = \[ScriptCapitalR]Target \[Dalet];
+
+Print[
+MatrixForm[
+ { {"kSS                      ",kSS                  }
+  ,{"kTarget                  ",kTarget              }
+  ,{"mSS                      ",mSS                  }
+  ,{"mTarget                  ",mTarget              }
+  ,{"\[ScriptCapitalR]SS     ",\[ScriptCapitalR]SS   }
+  ,{"\[ScriptCapitalR]Target ",\[ScriptCapitalR]Target   }
+  ,{"\[ScriptCapitalW]SS     ",\[ScriptCapitalW]SS   }
+  ,{"\[ScriptCapitalW]Target ",\[ScriptCapitalW]Target   }
+  ,{"\[GothicCapitalR]SS     ",\[GothicCapitalR]SS   }
+  ,{"\[GothicCapitalR]Target ",\[GothicCapitalR]Target   }
+  ,{"MPCPartEqbm             ",MPCPartEqbm                }
+  ,{"hSS                     ",hSS                  }
+  ,{"cSS1                    ",cSS1                 }
+  ,{"cSS2                    ",cSS2                 }
+  ,{"cTarget                 ",cTarget              }
+}]
+];
+

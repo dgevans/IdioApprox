@@ -1,0 +1,15 @@
+{\[Dalet],G,\[CurlyEpsilon]} = {0.90,1.01,0.36};
+
+MacroModel=True;
+<<Common.nb;
+(* PF SS k *) kSS = ((((G^\[Rho])/(\[Beta] \[Dalet]))-1)/\[CurlyEpsilon])^(1/(\[CurlyEpsilon]-1)); 
+(* PF SS a *) aSS = kSS G/\[Dalet];                                                               
+\[Alpha]Vec =       Table[Exp[\[Alpha]Loop]-1,{\[Alpha]Loop,0,Log[3 aSS], Log[3 aSS]/(n-1)}];
+\[CapitalPsi]Vec     = {0.90,1.00,1.10};
+\[CapitalPsi]VecProb = {0.25,0.50,0.25};
+\[CapitalTheta]Vec     = {1.};
+\[CapitalTheta]VecProb = {1.};
+R[k_] := If[k>0,(*then*)1+\[CurlyEpsilon] k^(\[CurlyEpsilon]-1),(*else*)\[Infinity]];
+W[k_] := (1-\[CurlyEpsilon])k^\[CurlyEpsilon] ;
+
+

@@ -1,0 +1,3 @@
+
+<<Macro.nb;
+Do[SolveAnotherPeriod,{PeriodsToAdd}];

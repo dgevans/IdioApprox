@@ -40,3 +40,13 @@ def update_state(Para,Gamma):
     Y = approx.ss.get_Y() + 0.5*d2Y[sigma].flatten()*sigma**2
     return Para.nomalize(Gamma_new),Y
     
+def testEuler(Para,Gamma):
+    '''
+    Tests the euler equation
+    '''
+    eps = approximate.eps
+    Izy = approximate.Izy
+    sigma = Para.sigma_e
+    
+    approx = approximate.approximate(Gamma)
+    

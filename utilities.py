@@ -6,7 +6,7 @@ Created on Wed Apr  2 17:26:22 2014
 """
 
 import numpy as np
-#from SparseGrid import interpolator
+from SparseGrid import interpolator
 from Spline import Spline
 import pycppad as ad
 
@@ -88,9 +88,30 @@ class interpolate_wrapper(object):
             else:
                 fhat = np.vectorize(lambda f: f(X).flatten(),otypes=[np.ndarray])
             return np.array(fhat(self.F).tolist())
-            
 
 class interpolator_factory(object):
+    '''
+    Generates an interpolator factory which will interpolate vector functions
+    '''
+    def __init__(self,d,mu,Mu,Sigma):
+        '''
+        Inits with types, orders and k
+        '''
+        self.interpolate = interpolator(d,mu,Mu,Sigma)
+        self.X = self.interpolate.getX()
+        
+    def __call__(self,Fs):
+        '''
+        Interpolates function given function values Fs at domain X
+        '''
+        Fshape = Fs[0].shape
+        Fflat = np.vstack(map(lambda F:F.flatten(),Fs))
+        F = []
+        for F_i in Fflat.T:
+            F.append(self.interpolate.fit(F_i))
+        return interpolate_wrapper(np.array(F),self.X.shape[1]).reshape(Fshape)
+
+class interpolator_factory_spline(object):
     '''
     Generates an interpolator factory which will interpolate vector functions
     '''

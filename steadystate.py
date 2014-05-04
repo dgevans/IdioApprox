@@ -38,7 +38,7 @@ class steadystate(object):
         '''
         Solve for the steady state
         '''
-        res = root(self.SteadyStateRes,np.ones(nY))
+        res = root(self.SteadyStateRes,0.5*np.ones(nY))
         if not res.success:
             raise Exception('Could not find steady state')
         self.Y = res.x

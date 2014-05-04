@@ -23,12 +23,15 @@ def F(w):
     '''
     Individual first order conditions
     '''
-    m,mu,c,l,rho1_,rho2,phi,x_,kappa_ = w[:9] #y
+    m,muhat,c,l,rho1_,rho2,phi,x_,kappa_ = w[:9] #y
     EUc,EUc_mu,Ex_,Erho1_ = w[9:13] #e
     alpha1,alpha2,tau,eta,lamb = w[13:18] #Y
-    m_,mu_ = w[18:20] #z
+    m_,muhat_ = w[18:20] #z
     x,kappa = w[20:22] #v
     eps = w[22] #shock
+
+    mu_ = muhat_ * m_
+    mu = muhat * m    
     
     Uc = c**(-sigma)
     Ucc = -sigma*c**(-sigma-1)
@@ -43,7 +46,7 @@ def F(w):
     ret[3] = alpha2 - m*Uc #defines m
     ret[4] = (1-tau)*np.exp(eps)*Uc + Ul #wage
     ret[5] = Ul - mu*(Ull*l + Ul) - phi*Ull + lamb*np.exp(eps)
-    ret[6] = rho2*Uc + kappa + eta
+    ret[6] = rho2 + kappa/Uc + eta/Uc
     ret[7] = Uc + x_*Ucc/(beta*EUc)*(mu-mu_) - mu*(Ucc*c + Uc) + rho1_*m_*Ucc/beta \
              +rho2*m*Ucc - phi*np.exp(eps)*(1-tau)*Ucc - lamb
     ret[8] = kappa_ - rho1_*EUc
@@ -57,8 +60,9 @@ def G(w):
     '''
     Aggregate equations
     '''
-    m,mu,c,l,rho1_,rho2,phi,x_,kappa_ = w[:9] #y
+    m,muhat,c,l,rho1_,rho2,phi,x_,kappa_ = w[:9] #y
     eps = w[22]
+ 
     
     Uc = c**(-sigma)
     
@@ -75,7 +79,9 @@ def f(y):
     '''
     Expectational equations that define e=Ef(y)
     '''
-    m,mu,c,l,rho1_,rho2,phi,x_,kappa_ = y
+    m,muhat,c,l,rho1_,rho2,phi,x_,kappa_ = y
+    
+    mu = muhat * m
     
     Uc = c**(-sigma)    
     
@@ -91,8 +97,10 @@ def Finv(YSS,z):
     '''
     Given steady state YSS solves for y_i
     '''
-    m,mu = z
+    m,muhat = z
     alpha1,alpha2,tau,eta,lamb = YSS
+    
+    mu = muhat * m
     
     Uc =alpha1/m
     c = (Uc)**(-1/sigma)
@@ -112,15 +120,16 @@ def Finv(YSS,z):
     kappa = rho1*Uc
     
     return np.vstack((
-    m,mu,c,l,rho1,rho2,phi,x,kappa   
+    m,muhat,c,l,rho1,rho2,phi,x,kappa   
     ))
     
 def GSS(YSS,y_i):
     '''
     Aggregate conditions for the steady state
     '''
-    m,mu,c,l,rho1,rho2,phi,x,kappa = y_i
+    m,muhat,c,l,rho1,rho2,phi,x,kappa = y_i
     alpha1,alpha2,tau,eta,lamb = YSS
+  
     
     Uc = c**(-sigma)
     
@@ -134,7 +143,9 @@ def nomalize(Gamma):
     '''
     #in our case we want distribution of market weights to be one
     
-    return Gamma/np.mean(Gamma)
+    Gamma[:,0] /= np.mean(Gamma[:,0])
+    Gamma[:,1] -= np.mean(Gamma[:,1])
+    return Gamma
     
     
     

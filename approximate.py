@@ -5,7 +5,6 @@ Created on Fri Apr 11 17:28:52 2014
 @author: dgevans
 """
 from copy import copy
-from Spline import Spline
 import steadystate
 import numpy as np
 
@@ -28,12 +27,12 @@ Ivy = None
 Izy = None
 
 y,e,Y,z,v,eps,S,sigma = [None]*8
-interpolate = utilities.interpolator_factory([3])
+#interpolate = utilities.interpolator_factory([3])
 
 def calibrate(Para):
     global F,G,f,ny,ne,nY,nz,nv,n,Ivy,Izy
     global y,e,Y,z,v,eps,S,sigma
-    global interpolate
+    #global interpolate
     F,G,f = Para.F,Para.G,Para.f
     ny,ne,nY,nz,nv,n = Para.ny,Para.ne,Para.nY,Para.nz,Para.nv,Para.n
     Ivy,Izy = np.zeros((nv,ny)),np.zeros((nz,ny)) # Ivy given a vector of y_{t+1} -> v_t and Izy picks out the state
@@ -53,7 +52,7 @@ def calibrate(Para):
     
     sigma = Para.sigma_e
     
-    interpolate = utilities.interpolator_factory([3]*nz) # cubic interpolation
+    #interpolate = utilities.interpolator_factory([3]*nz) # cubic interpolation
     steadystate.calibrate(Para)
 
 class approximate(object):
@@ -67,11 +66,18 @@ class approximate(object):
         self.Gamma = Gamma
         self.ss = steadystate.steadystate(Gamma.T)
         
-        x = []
+        #x = []
+        #for i in range(nz):
+        #    x.append(np.linspace(min(Gamma[:,i])-0.05,0.05+max(Gamma[:,i]),20))
+        #self.zgrid =  Spline.makeGrid(x)
+        Mu = np.zeros(nz)
+        Sigma = np.zeros((nz,nz))
         for i in range(nz):
-            x.append(np.linspace(min(Gamma[:,i])-0.05,0.05+max(Gamma[:,i]),20))
-        self.zgrid =  Spline.makeGrid(x)
-        
+            xmin,xmax = min(Gamma[:,i])-0.001,max(Gamma[:,i])+0.001
+            Mu[i] = (xmin+xmax)/2
+            Sigma[i,i] = (xmax-xmin)/2
+        self.interpolate = utilities.interpolator_factory(nz,3,Mu,Sigma)
+        self.zgrid = self.interpolate.X
         #precompute Jacobians and Hessians
         self.DF = lambda z_i:utilities.ad_Jacobian(F,self.get_w(z_i))
         self.HF = lambda z_i:utilities.ad_Hessian(F,self.get_w(z_i))
@@ -133,13 +139,13 @@ class approximate(object):
         self.dy = {}
         temp = utilities.dict_map(self.compute_dy,self.zgrid)
         for x in [z,eps,Y]:
-            self.dy[x] = interpolate(self.zgrid,temp[x])
+            self.dy[x] = self.interpolate(temp[x])
         
         DG = self.DG
         
         self.DGY = self.integrate(lambda z_i: DG(z_i)[:,Y]+DG(z_i)[:,y].dot(self.dy[Y](z_i)))
         
-        self.dY = interpolate(self.zgrid,
+        self.dY = self.interpolate(
                               map(lambda z_i: np.linalg.solve(self.DGY,
                             -DG(z_i)[:,z]-DG(z_i)[:,y].dot(self.dy[z](z_i))),self.zgrid))
     def get_d(self,z_i):
@@ -217,10 +223,10 @@ class approximate(object):
         temp = utilities.dict_map(self.compute_d2y,self.zgrid)
         for x1 in [S,eps]:
             for x2 in [S,eps]:
-                self.d2y[x1,x2] = interpolate(self.zgrid,temp[x1,x2])
+                self.d2y[x1,x2] = self.interpolate(temp[x1,x2])
                 
         #Now d2Y
-        DGhat_f = interpolate(self.zgrid,map(self.compute_DGhat,self.zgrid))
+        DGhat_f = self.interpolate(map(self.compute_DGhat,self.zgrid))
         DGhat = {}
         DGhat[z,z] = DGhat_f[:,:nz,:nz]
         DGhat[z,Y] = DGhat_f[:,:nz,nz:]
@@ -238,10 +244,10 @@ class approximate(object):
         d2Y = {}
         DGYinv= np.linalg.inv(self.DGY)
         #First z_i,z_i
-        d2Y[z,z] = interpolate(self.zgrid,map(lambda z_i:
+        d2Y[z,z] = self.interpolate(map(lambda z_i:
             np.tensordot(DGYinv, - DGhat[z,z](z_i),1),self.zgrid))
             
-        d2Y[Y,z] = interpolate(self.zgrid,map(lambda z_i:
+        d2Y[Y,z] = self.interpolate(map(lambda z_i:
             np.tensordot(DGYinv, - DGhat[Y,z](z_i)
             -DGhat[Y,Y].dot(self.dY(z_i))/2,1),self.zgrid ) )
             
@@ -278,11 +284,13 @@ class approximate(object):
         
         
         temp = np.linalg.inv(DFi[:,y]+DFi[:,e].dot(df)+DFi[:,v].dot(Ivy+Ivy.dot(d[y,z]).dot(Izy)))
-        Ahat = -DFi[:,e].dot(df).dot(self.d2y[eps,eps](z_i).flatten()) \
-        -DFi[:,e].dot(quadratic_dot(Hf,d[y,eps],d[y,eps]).flatten())
-        -DFi[:,v].dot(Ivy).dot(d[y,Y]).dot(integral_term)        
-        Bhat = DFi[:,Y]
-        Chat = DFi[:,v].dot(Ivy).dot(d[y,Y])
+        
+        Ahat = (-DFi[:,e].dot(df).dot(self.d2y[eps,eps](z_i).flatten()) 
+        -DFi[:,e].dot(quadratic_dot(Hf,d[y,eps],d[y,eps]).flatten()) 
+        -DFi[:,v].dot(Ivy).dot(d[y,Y]).dot(integral_term) )
+        
+        Bhat = -DFi[:,Y] #SHOULD THESE BE -
+        Chat = -DFi[:,v].dot(Ivy).dot(d[y,Y])#SHOULD THESE BE -
         return temp.dot(np.hstack((Ahat.reshape(-1,1),Bhat,Chat)))
         
     def compute_DGhat_sigma(self,z_i):
@@ -312,19 +320,24 @@ class approximate(object):
             quadratic_dot(self.d2Y[z,z](z_i),Izy.dot(self.dy[eps](z_i)),Izy.dot(self.dy[eps](z_i))).flatten()
             + self.dY(z_i).dot(Izy).dot(self.d2y[eps,eps](z_i).flatten()))
             
-        ABCi = interpolate(self.zgrid,map(lambda z_i:self.compute_d2y_sigma(z_i,integral_term),self.zgrid) )
+        ABCi = self.interpolate(map(lambda z_i:self.compute_d2y_sigma(z_i,integral_term),self.zgrid) )
         Ai,Bi,Ci = ABCi[:,0],ABCi[:,1:nY+1],ABCi[:,nY+1:]
         Atild = self.integrate(lambda z_i: self.dY(z_i).dot(Izy).dot(Ai(z_i)))
         Btild = self.integrate(lambda z_i: self.dY(z_i).dot(Izy).dot(Bi(z_i)))
         Ctild = self.integrate(lambda z_i: self.dY(z_i).dot(Izy).dot(Ci(z_i)))
         tempC = np.linalg.inv(np.eye(nY)-Ctild)
 
-        DGhat = self.integrate(interpolate(self.zgrid,map(self.compute_DGhat_sigma,self.zgrid)))
+        DGhat = self.integrate(self.interpolate(map(self.compute_DGhat_sigma,self.zgrid)))
         
         temp1 = self.integrate(lambda z_i:DG(z_i)[:,Y] + DG(z_i)[:,y].dot(Bi(z_i)+Ci(z_i).dot(tempC).dot(Btild)) )
         temp2 = self.integrate(lambda z_i:DG(z_i)[:,y].dot(Ai(z_i)+Ci(z_i).dot(tempC).dot(Atild)) )
         
         self.d2Y[sigma] = np.linalg.solve(temp1,-DGhat-temp2)
-        self.d2y[sigma] = interpolate(self.zgrid,
+        self.d2y[sigma] = self.interpolate(
                 map(lambda z_i: Ai(z_i) + Ci(z_i).dot(tempC).dot(Atild) +
                       ( Bi(z_i)+Ci(z_i).dot(tempC).dot(Btild) ).dot(self.d2Y[sigma]),self.zgrid))
+        self.Atild = Atild
+        self.Btild = Btild
+        self.Ctild = Ctild
+        self.Ai,self.Bi,self.Ci = Ai,Bi,Ci
+        self.integral_term = integral_term

@@ -6,8 +6,9 @@ Created on Wed Apr  2 17:26:22 2014
 """
 
 import numpy as np
-from SparseGrid import interpolator
+from SparseGrid import interpolator as sg_interpolator
 from Spline import Spline
+from scipy.interpolate import UnivariateSpline
 import pycppad as ad
 
 def hstack(tup):
@@ -88,16 +89,90 @@ class interpolate_wrapper(object):
             else:
                 fhat = np.vectorize(lambda f: f(X).flatten(),otypes=[np.ndarray])
             return np.array(fhat(self.F).tolist())
-
+            
+class interpolator(object):
+    '''
+    A new interpolator class which removes a lot of the 1 dimensional accuracy
+    '''
+    def __init__(self,d,mu,Gamma):
+        '''
+        Initiates the interpolator class
+        '''
+        #check if there is any variation
+        self.f = None
+        if np.var(Gamma,0)[0] >0 or d == 1:
+            self.f = {}
+            Gammahat = Gamma.copy()
+            for i in range(1,d):
+                self.f[i] = UnivariateSpline(Gamma[:,0],Gamma[:,i])
+                Gammahat[:,i] -= self.f[i](Gamma[:,0])
+            Mu = np.zeros(d)
+            Sigma = np.zeros((d,d))
+            for i in range(d):
+                xmin,xmax = min(Gammahat[:,i]),max(Gammahat[:,i])
+                Mu[i] = (xmin+xmax)/2
+                Sigma[i,i] = (xmax-xmin)/2
+            self.interp = sg_interpolator(d,mu,Mu,Sigma)
+            self.d = d
+        else:
+            Mu = np.zeros(d)
+            Sigma = np.zeros((d,d))
+            for i in range(d):
+                xmin,xmax = min(Gamma[:,i])-0.001,max(Gamma[:,i])+0.001
+                Mu[i] = (xmin+xmax)/2
+                Sigma[i,i] = (xmax-xmin)/2
+            self.interp = sg_interpolator(d,mu,Mu,Sigma)
+            
+    def getX(self):
+        '''
+        Gets the domain where the function needs to be evaluated
+        '''
+        if self.f == None:
+            return self.interp.getX()
+        else:
+            X = self.interp.getX()
+            for i in range(1,self.d):
+                X[:,i] += self.f[i](X[:,0])
+            return X
+            
+    def fit(self,Fs):
+        '''
+        Fits the vector of data X
+        '''
+        if self.f == None:
+            return self.interp.fit(Fs)
+        else:
+            return IFunction(self.f,self.interp.fit(Fs),self.d)
+            
+class IFunction(object):
+    '''
+    Defines a function given the new domain
+    '''
+    def __init__(self,f,F,d):
+        '''
+        Initializes
+        '''
+        self.f = f
+        self.F = F
+        self.d = d
+    def __call__(self,X):
+        '''
+        Evaluates the function
+        '''
+        X = np.atleast_2d(X.copy())
+        for i in range(1,self.d):
+            X[:,i] -= self.f[i](X[:,0])
+        return self.F(X)
+            
 class interpolator_factory(object):
     '''
     Generates an interpolator factory which will interpolate vector functions
     '''
-    def __init__(self,d,mu,Mu,Sigma):
+    def __init__(self,d,mu,Gamma):
         '''
         Inits with types, orders and k
         '''
-        self.interpolate = interpolator(d,mu,Mu,Sigma)
+        self.interpolate = interpolator(d,mu,Gamma)
         self.X = self.interpolate.getX()
         
     def __call__(self,Fs):

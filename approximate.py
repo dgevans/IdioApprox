@@ -70,13 +70,13 @@ class approximate(object):
         #for i in range(nz):
         #    x.append(np.linspace(min(Gamma[:,i])-0.05,0.05+max(Gamma[:,i]),20))
         #self.zgrid =  Spline.makeGrid(x)
-        Mu = np.zeros(nz)
-        Sigma = np.zeros((nz,nz))
-        for i in range(nz):
-            xmin,xmax = min(Gamma[:,i])-0.001,max(Gamma[:,i])+0.001
-            Mu[i] = (xmin+xmax)/2
-            Sigma[i,i] = (xmax-xmin)/2
-        self.interpolate = utilities.interpolator_factory(nz,3,Mu,Sigma)
+        #Mu = np.zeros(nz)
+        #Sigma = np.zeros((nz,nz))
+        #for i in range(nz):
+        #    xmin,xmax = min(Gamma[:,i])-0.001,max(Gamma[:,i])+0.001
+        #    Mu[i] = (xmin+xmax)/2
+        #    Sigma[i,i] = (xmax-xmin)/2
+        self.interpolate = utilities.interpolator_factory(nz,3,Gamma)
         self.zgrid = self.interpolate.X
         #precompute Jacobians and Hessians
         self.DF = lambda z_i:utilities.ad_Jacobian(F,self.get_w(z_i))

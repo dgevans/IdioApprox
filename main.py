@@ -14,4 +14,3 @@ Gamma[0] = np.zeros((100,3)) #initialize 100 agents at m = 1 for testing purpose
 Gamma[0][:,0] = np.ones(100)
 simulate.simulate(Para,Gamma,Y,100)
 
-

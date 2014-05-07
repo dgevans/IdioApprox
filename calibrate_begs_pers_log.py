@@ -18,17 +18,21 @@ ne = 4 # number of Expectation Terms (E_t u_{c,t+1}, E_t u_{c,t+1}mu_{t+1} E_{t}
 nY = 5 # Number of aggregates (alpha_1,alpha_2,tau,eta,lambda)
 nz = 3 # Number of individual states (m_{t-1},mu_{t-1})
 nv = 2 # number of forward looking terms (x_t,rho1_t)
+indx_y={'logm':0,'muhat':1,'e':2,'c' :3,'l':4,'rho1_':5,'rho2':6,'phi':7,'x_':8,'kappa_':9,'shocks':10}
+indx_Y={'alpha1':0,'alpha2':1,'taxes':2,'eta':3,'lambda':4}
+indx_Gamma={'m_':0,'mu_':1,'e_':2}
+
 
 def F(w):
     '''
     Individual first order conditions
     '''
-    logm,muhat,e,c,l,rho1_,rho2,phi,x_,kappa_ = w[:10] #y
-    EUc,EUc_mu,Ex_,Erho1_ = w[10:14] #e
-    alpha1,alpha2,tau,eta,lamb = w[14:19] #Y
-    logm_,muhat_,e_ = w[19:22] #z
-    x,kappa = w[22:24] #v
-    eps = w[24] #shock
+    logm,muhat,e,c,l,rho1_,rho2,phi,x_,kappa_ = w[:ny] #y
+    EUc,EUc_mu,Ex_,Erho1_ = w[ny:ny+ne] #e
+    alpha1,alpha2,tau,eta,lamb = w[ny+ne:ny+ne+nY] #Y
+    logm_,muhat_,e_= w[ny+ne+nY:ny+ne+nY+nz] #z
+    x,kappa = w[ny+ne+nY+nz:ny+ne+nY+nz+nv] #v
+    eps = w[ny+ne+nY+nz+nv] #shock
     
     m_,m = np.exp(logm_),np.exp(logm)
 
@@ -63,7 +67,7 @@ def G(w):
     '''
     Aggregate equations
     '''
-    logm,muhat,e,c,l,rho1_,rho2,phi,x_,kappa_ = w[:10] #y
+    logm,muhat,e,c,l,rho1_,rho2,phi,x_,kappa_ = w[:ny] #y
  
     m = np.exp(logm)
     Uc = c**(-sigma)

@@ -19,23 +19,19 @@ nY = 5 # Number of aggregates (alpha_1,alpha_2,tau,eta,lambda)
 nz = 2 # Number of individual states (m_{t-1},mu_{t-1})
 nv = 2 # number of forward looking terms (x_t,rho1_t)
 
-indx_y={'logm':0,'muhat':1,'e':2,'c' :3,'l':4,'rho1_':5,'rho2':6,'phi':7,'x_':8,'kappa_':9,'shocks':10}
-indx_Y={'alpha1':0,'alpha2':1,'taxes':2,'eta':3,'lambda':4}
-indx_Gamma={'m_':0,'mu_':1,'e_':2}
-
-
 def F(w):
     '''
     Individual first order conditions
     '''
-    logm,muhat,c,l,rho1_,rho2,phi,x_,kappa_ = w[:ny] #y
-    EUc,EUc_mu,Ex_,Erho1_ = w[ny:ny+ne] #e
-    alpha1,alpha2,tau,eta,lamb = w[ny+ne:ny+ne+nY] #Y
-    logm_,muhat_ = w[ny+ne+nY:ny+ne+nY+nz] #z
-    x,kappa = w[ny+ne+nY+nz:ny+ne+nY+nz+nv] #v
-    eps = w[ny+ne+nY+nz+nv] #shock
+    logm,muhat,c,l,rho1_,rho2,phi,x_,kappa_ = w[:9] #y
+    EUc,EUc_mu,Ex_,Erho1_ = w[9:13] #e
+    alpha1,alpha2,tau,eta,lamb = w[13:18] #Y
+    logm_,muhat_ = w[18:20] #z
+    x,kappa = w[20:22] #v
+    eps = w[22] #shock
 
     m_,m = np.exp(logm_),np.exp(logm)
+    
     mu_ = muhat_ * m_
     mu = muhat * m    
     
@@ -55,18 +51,21 @@ def F(w):
     ret[6] = rho2 + kappa/Uc + eta/Uc
     ret[7] = Uc + x_*Ucc/(beta*EUc)*(mu-mu_) - mu*(Ucc*c + Uc) + rho1_*m_*Ucc/beta \
              +rho2*m*Ucc - phi*np.exp(eps)*(1-tau)*Ucc - lamb
-    ret[8] = kappa_ - rho1_*EUc    
+    ret[8] = kappa_ - rho1_*EUc
+    
     ret[9] = mu_*EUc - EUc_mu
     ret[10] = alpha1 - m_*EUc # bond pricing
+    
     return ret
     
 def G(w):
     '''
     Aggregate equations
     '''
-    logm,muhat,c,l,rho1_,rho2,phi,x_,kappa_ = w[:ny] #y
-    eps = w[ny+ne+nY+nz+nv]
-    m=np.exp(logm)
+    logm,muhat,c,l,rho1_,rho2,phi,x_,kappa_ = w[:9] #y
+    eps = w[22]
+ 
+    m = np.exp(logm)
     
     Uc = c**(-sigma)
     
@@ -84,7 +83,9 @@ def f(y):
     Expectational equations that define e=Ef(y)
     '''
     logm,muhat,c,l,rho1_,rho2,phi,x_,kappa_ = y
-    m=np.exp(logm)
+    
+    m = np.exp(logm)
+    
     mu = muhat * m
     
     Uc = c**(-sigma)    
@@ -103,8 +104,11 @@ def Finv(YSS,z):
     '''
     logm,muhat = z
     alpha1,alpha2,tau,eta,lamb = YSS
-    m=np.exp(logm)
+    
+    m = np.exp(logm)
+    
     mu = muhat * m
+    
     Uc =alpha1/m
     c = (Uc)**(-1/sigma)
     Ucc = -sigma*c**(-sigma-1)
@@ -119,10 +123,11 @@ def Finv(YSS,z):
     rho2 = -rho1
     
     x = beta*( Uc*c + Ul*l )/(1-beta)
-    kappa = rho1*Uc    
+    
+    kappa = rho1*Uc
     
     return np.vstack((
-    m,muhat,c,l,rho1,rho2,phi,x,kappa   
+    logm,muhat,c,l,rho1,rho2,phi,x,kappa   
     ))
     
 def GSS(YSS,y_i):
@@ -132,7 +137,7 @@ def GSS(YSS,y_i):
     logm,muhat,c,l,rho1,rho2,phi,x,kappa = y_i
     alpha1,alpha2,tau,eta,lamb = YSS
   
-    #m=np.exp(logm)
+    
     Uc = c**(-sigma)
     
     return np.hstack((
@@ -144,8 +149,9 @@ def nomalize(Gamma):
     Normalizes the distriubtion of states if need be
     '''
     #in our case we want distribution of market weights to be one
+    Gamma = Gamma.copy()
     Gamma[:,0] -= np.mean(Gamma[:,0])
-    Gamma[:,1] -= np.mean(Gamma[:,1])    
+    Gamma[:,1] -= np.mean(Gamma[:,1])
     return Gamma
     
     

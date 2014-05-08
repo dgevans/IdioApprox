@@ -7,20 +7,34 @@ Created on Sat Apr 19 16:14:02 2014
 
 import approximate
 import numpy as np
+from IPython.parallel import Client
+from IPython.parallel import Reference
+c = Client()
+v = c[:] 
 
-def simulate(Para,Gamma,Y,T,T0=0):
+def simulate(Para,Gamma,Y,Shocks,y,T,T0=0):
     '''
     Simulates a sequence of state path for a given Para
     '''
-    Shocks={}
-    y={}
     approximate.calibrate(Para)
     t = T0+1
     while t< T:
         print t
-        Gamma[t],Y[t-1], Shocks[t-1],y[t-1]= update_state(Para,Gamma[t-1])
+        Gamma[t],Y[t-1], Shocks[t-1],y[t-1]= update_state_parallel(Para,Gamma[t-1])
         t += 1
     return Gamma,Y,Shocks,y
+    
+def update_state_parallel(Para,Gamma):
+    '''
+    Updates the state using parallel code
+    '''
+    v.block = True
+    v['Gamma'] = Gamma
+    v.execute('approx = approximate.approximate(Gamma)')
+    approx = Reference('approx')
+    
+    Gamma_new,Y,Shocks,y = v.apply(lambda approx: approx.iterate(),approx)[0]
+    return Para.nomalize(Gamma_new),Y.copy(),Shocks.copy(),y.copy()
 
 def update_state(Para,Gamma):
     '''
@@ -29,28 +43,27 @@ def update_state(Para,Gamma):
     eps = approximate.eps
     Izy = approximate.Izy
     sigma = Para.sigma_e
+    N = len(Gamma)
     
-    approx = approximate.approximate(Gamma)
-    dy,d2y = approx.dy,approx.d2y
-    Gamma_new = np.empty(Gamma.shape)
-    y=np.empty((Gamma.shape[0],Para.ny))
+    v['Gamma'] = Gamma
+    v.execute('approx = approximate.approximate(Gamma)',block=True)
+    v.execute('approximation = approx.get_approximation()',block=True)
+    approx = Reference('approx')
+    #dy,d2y = approx.dy,approx.d2y
     epsilon = np.random.randn(len(Gamma)) * sigma        
-    for z_i,z_i_new,e,y_i in zip(Gamma,Gamma_new,epsilon,y):
-        #z_i_new[:] = z_i + Izy.dot(dy[eps](z_i).flatten()*e + 0.5*(d2y[eps,eps](z_i).flatten()*e**2 + d2y[sigma](z_i).flatten()*sigma**2))
-        y_i[:] = approx.ss.get_y(z_i).flatten() + dy[eps](z_i).flatten()*e + 0.5*(d2y[eps,eps](z_i).flatten()*e**2 + d2y[sigma](z_i).flatten()*sigma**2).flatten()
-        z_i_new[:]=Izy.dot(y_i)
+    #for z_i,z_i_new,e,y_i in zip(Gamma,Gamma_new,epsilon,y): 
+    #    y_i[:] = approx.ss.get_y(z_i).flatten() + dy[eps](z_i).flatten()*e + 0.5*(d2y[eps,eps](z_i).flatten()*e**2 + d2y[sigma](z_i).flatten()*sigma**2).flatten()
+    def compute_y(approx,eps,sigma,z_i,e):
+        return approx.ss.get_y(z_i).flatten() + approx.dy[eps](z_i).flatten()*e + 0.5*(approx.d2y[eps,eps](z_i).flatten()*e**2 + approx.d2y[sigma](z_i).flatten()*sigma**2).flatten()
+    
+    y = np.vstack(v.map(compute_y,
+               [approx]*N,[eps]*N,[sigma]*N,Gamma,epsilon,block=True))
         
+    Gamma_new = Izy.dot(y.T).T
+    
+    approx = c[0]['approximation']
     d2Y = approx.d2Y
     Y = approx.ss.get_Y() + 0.5*d2Y[sigma].flatten()*sigma**2
     return Para.nomalize(Gamma_new),Y,epsilon,y
     
-def testEuler(Para,Gamma):
-    '''
-    Tests the euler equation
-    '''
-    eps = approximate.eps
-    Izy = approximate.Izy
-    sigma = Para.sigma_e
-    
-    approx = approximate.approximate(Gamma)
     

@@ -279,3 +279,28 @@ def quadratic_dot(Q,a,b):
     Performs to the dot product appropriately
     '''
     return np.tensordot(np.tensordot(Q,a,(1,0)),b,(1,0))
+    
+    
+class dict_fun(object):
+    '''
+    Creates a copy function which stores the results in a dictionary
+    '''
+    def __init__(self,f):
+        '''
+        Initialize with function f
+        '''
+        self.f = f
+        self.fm = {}
+    def __call__(self,z):
+        '''
+        Evaluates at a point z, first checks if z in in dictionary, if so, returns
+        stored result.        
+        '''
+        hash_z = sha1(np.ascontiguousarray(z)).hexdigest()
+        if self.fm.has_key(hash_z):
+            return self.fm[hash_z]
+        else:
+            f = self.f(z)
+            self.fm[hash_z] = f
+            return f
+

@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 import simulate
-import calibrate_begs_pers_log as Para
-#import calibrate_begs_iid as Para
+#import calibrate_begs_pers_log as Para
+import calibrate_begs_iid as Para
 import numpy as np
 import pandas as pd
 Gamma,Y, Shocks, y= {},{},{},{}
-N=100
-T=20
+N=1000
+T=100
 
+#
+v = simulate.v
+v.execute('import calibrate_begs_iid as Para')
+v.execute('import approximate_parallel as approximate')
+v.execute('approximate.calibrate(Para)')
 
 
 
@@ -15,7 +20,7 @@ indx_y=Para.indx_y
 indx_Y=Para.indx_Y
 indx_Gamma=Para.indx_Gamma
 Gamma[0] = np.zeros((N,Para.nz)) 
-Gamma,Y,Shocks,y=simulate.simulate(Para,Gamma,Y,T)
+simulate.simulate(Para,Gamma,Y,Shocks,y,T)
 
  
 mu,output,g,assets,bar_g,simulation_data={},{},{},{},{},{}
@@ -32,13 +37,13 @@ for t in range(T-1):
     if t==0:
        assets[t]=y[t][:,indx_y['x_']]*(1/np.exp(Gamma[t][:,indx_Gamma['m_']]))
     else:
-       assets[t]=y[t][:,indx_y['x_']]*(Y[t-1][indx_Y['alpha2']]/Gamma[t][:,indx_Gamma['m_']])    
+       assets[t]=y[t][:,indx_y['x_']]*(Y[t-1][indx_Y['alpha2']]/np.exp(Gamma[t][:,indx_Gamma['m_']]))    
        
 
     assets[t]=np.atleast_2d(assets[t]).reshape(N,1)    
-    simulation_data[t]=np.hstack((output[t],g[t],assets[t],y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
+    simulation_data[t]=np.hstack((output[t],g[t],assets[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
 
-panel_data=pd.Panel(simulation_data,minor_axis=['y','g','b','logm','muhat','e','c','l','rho1_','rho2','phi','x_','kappa_','shocks'])
+panel_data=pd.Panel(simulation_data,minor_axis=['y','g','b','mu','logm','muhat','e','c','l','rho1_','rho2','phi','x_','kappa_','shocks'])
 
 panel_data.to_pickle('simulation_data.dat')
 
@@ -55,6 +60,13 @@ def get_corr(var_1,var_2):
     corr_data= map(lambda t: np.corrcoef(panel_data.minor_xs(var_1)[t],panel_data.minor_xs(var_2)[t])[0,1],range(T-1))
     plot(corr_data)
     return corr_data
+
+
+
+def get_scatter(var_1,var_2,t):
+    scatter(panel_data.minor_xs(var_1)[t],panel_data.minor_xs(var_2)[t])
+    
+    
 
 
 def plot_agg_var(var): 

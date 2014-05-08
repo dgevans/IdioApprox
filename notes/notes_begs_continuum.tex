@@ -173,7 +173,7 @@ We first derive a simple expression for taxes. The FOC for labor \eqref{eq-foc_l
 \frac{ \omega^i u^i_{c,t}y^i_t}{\gamma}- \mu^i_t u^i_{c,t}y^i_t[1 +\frac{1}{\gamma}]-\lambda_t\gamma^{- 1}\frac{y^i_t }{1-\tau_t}=\phi^i_tu^i_{c,t}e^i_t    	
  \]
 
-Define $w_{i,t}=u^i_{c,t}[\omega^i-\mu^i_t(1+\gamma)]$ and $\bar{w}_{t} = \int u^i_{c,t}\omega^i di$ and $\bar{w}_{i,t}=\frac{g_{i,t}}{\bar{w}_t}$.
+Define $w_{i,t}=u^i_{c,t}[\omega^i-\mu^i_t(1+\gamma)]$ and $\bar{w}_{t} = \int u^i_{c,t}\omega^i di$ and $\bar{w}_{i,t}=\frac{w_{i,t}}{\bar{w}_t}$.
 
 Integrating  over i's we have
 
@@ -201,6 +201,20 @@ Note that, using equation \eqref{eq-Bond_1}, equation \eqref{eq-foc_T} can be re
 \[
 	\int \frac{\mu^i_t}{m^i_t} = 0
 \] thus equation \eqref{eq-foc_T} is redundant and we can choose $T$ to be any value.  For simplicity we set $T=0$.
+
+\section{Quasi Linear utility}
+With quasilinear utility and absent non-negativity constraints, we have a simple expression for how taxes depend on the distribution of initial Pareto weights.
+
+XXXXX
+
+With risk aversion there will be two competing forces
+
+Spreads in marginal utilities
+
+covariance between consumption and output that affects net costs of extracting resources  
+
+What is the relationship between 
+
 
 \section{Deterministic Steady State}
 We first look at an economy with $q=0$. Given a joint distribution $\Gamma_0(\xi)$ the non-stochastic steady state is described by an allocation $c(\xi), l(\xi), x(\xi)$ and aggregate labor taxes $\tau$. 
@@ -260,4 +274,68 @@ The aggregates $(\alpha,\tau,\lambda)$ solve
 
    \end{subequations}
 
+  \section{Approximation}
+  
+
+  Collect the individual policy rules in $y(\xi,\epsilon|\Gamma,q)$ and the aggregates as $Y(\Gamma)$. The laws of motion for the state variables are defined by $\xi'(\xi,\epsilon|\Gamma,q)$ and $\Gamma'=\Phi(\Gamma,q)$.
+\begin{enumerate}
+
+
+\item What is the goal ?
+
+  The goal is to obtain an approximation of the individual policy rules and aggregate variables using pertubation around $q=0$ for an aribrary choice of $\Gamma$. Thus even with a first order exapansion, how agents respond to shocks will depend both on the aggregate distribution  $\Gamma$ and individual state variables $\xi$
+
+\item What are the challanges
+
+  \begin{itemize}
+  \item Agggregating across agents 
+  \item Forecasting future aggregate variables
+  \item Accounting for GE effects of higher order terms
+  \end{itemize}
+
+\item What are the ``tricks'' ?
+
+\item How is it actually implemented ?
+\item Remarks - what are the class of problems this can work? extensions etc
+\end{enumerate}
+
+
+  \section{Results}
+We use the methods describe to compute solutions to two extreme economies. The first has iid productivity shocks $(\rho=0)$ and the second one has permenant productivity shocks $(\rho=1)$\footnote{XXX stationarity}.
+
+Why these two cases ?
+
+
+
+  These two economies by construction have very different implications how the agents respond to productivity shocks. This allows us to examine the second force outlined before in more detail.
+
+Results in words
+
+
+Graphs
+
+- Taxes (IID,Persistent)
+- quantiles for consumption, output and labor earnings
+- time paths for covariance in consumption and output
+
+
+
+
+Discussion
+
+
+
+Extentions
+
+
+
+
+
+
+
+
+
+  \begin{itemize}
+  \item 
+  \end{itemize}
 \end{document}

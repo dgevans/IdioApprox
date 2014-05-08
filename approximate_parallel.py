@@ -407,7 +407,7 @@ class approximate(object):
         Gamma = y.dot(Izy.T)
         Y = self.ss.get_Y() + 0.5*self.d2Y[sigma].flatten()*sigma**2
         
-        return Gamma,Y,y,epsilon
+        return Gamma,Y,epsilon,y
         
         
         

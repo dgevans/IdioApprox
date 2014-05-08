@@ -34,7 +34,7 @@ def update_state_parallel(Para,Gamma):
     approx = Reference('approx')
     
     Gamma_new,Y,Shocks,y = v.apply(lambda approx: approx.iterate(),approx)[0]
-    return Para.nomalize(Gamma_new),Y.copy(),Shocks.copy(),y.copy()
+    return Para.nomalize(Gamma_new.copy()),Y.copy(),Shocks.copy(),y.copy()
 
 def update_state(Para,Gamma):
     '''

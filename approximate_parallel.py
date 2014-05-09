@@ -7,12 +7,12 @@ Created on Fri Apr 11 17:28:52 2014
 from copy import copy
 import steadystate
 import numpy as np
-
 import utilities
 from utilities import hashable_array
 from utilities import quadratic_dot
 from utilities import dict_fun
 import itertools
+
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD

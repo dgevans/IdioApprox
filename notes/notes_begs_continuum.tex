@@ -159,7 +159,28 @@ Equations \eqref{eq-Bond_1} and \eqref{eq-Bond_2} ensure that individual Euler e
 
 The solution to these FOC can be expressed recursively using individual states $\xi^i_{t-1}=[\mu^i_{t-1},m^i_{t-1},e^i_{t-1}]$, shocks $\epsilon^i_t$ and aggregate state $\Gamma_{t-1}(\xi^i_{t-1})$. 
 
-We first derive a simple expression for taxes. The FOC for labor \eqref{eq-foc_l} can be re-written as 
+\section{Ricardian Equivalence}
+Note that, using equation \eqref{eq-Bond_1}, equation \eqref{eq-foc_T} can be rewritten as 
+\[
+	\int \frac{\mu^i_t}{m^i_t} = 0
+\]  Moreover, equation \eqref{eq-foc_x} can be expressed as
+\[
+\frac{\alpha^1_{t-1} \mu^i_{t-1}}{m^i_{t-1}} = \alpha^2_t \EE_{t-1} \frac{\mu^i_t}{m^i_t}
+\]By integrating both sides with respect to $i$, we obtain
+\[
+	\alpha^1_{t-1} \int \frac{\mu^i_{t-1}}{m^i_{t-1}}di = \alpha^2_t\int \frac{\mu^i_{t}}{m^i_t} di
+\]  This implies that if 
+\[
+	\int \frac{\mu^i_{t-1}}{m^i_{t-1}} = 0
+\]is satisfied for time $t-1$ we have then
+\[
+	\int \frac{\mu^i_t}{m^i_t} = 0
+\] thus equation \eqref{eq-foc_T} is redundant and we can choose $T$ to be any value.  For simplicity we set $T=0$.
+
+\section{Optimal Taxes}
+In this section we derive a simple expression for taxes and use it to examine how the Ramsey plan uses distortionary taxes to redistribute inview of inequality in earnings and wealth.  
+
+The FOC for labor \eqref{eq-foc_l} can be re-written as 
 
 
  \[
@@ -184,37 +205,37 @@ Integrating  over i's we have
 \end{equation}   
 
 Where $Y_t=\int y^i_t di$ and $\hat{Y}_t=\int y^i_t \bar{w}_{i,t}di$
-\section{Ricardian Equivalence}
-Note that, using equation \eqref{eq-Bond_1}, equation \eqref{eq-foc_T} can be rewritten as 
-\[
-	\int \frac{\mu^i_t}{m^i_t} = 0
-\]  Moreover, equation \eqref{eq-foc_x} can be expressed as
-\[
-\frac{\alpha^1_{t-1} \mu^i_{t-1}}{m^i_{t-1}} = \alpha^2_t \EE_{t-1} \frac{\mu^i_t}{m^i_t}
-\]By integrating both sides with respect to $i$, we obtain
-\[
-	\alpha^1_{t-1} \int \frac{\mu^i_{t-1}}{m^i_{t-1}}di = \alpha^2_t\int \frac{\mu^i_{t}}{m^i_t} di
-\]  This implies that if 
-\[
-	\int \frac{\mu^i_{t-1}}{m^i_{t-1}} = 0
-\]is satisfied for time $t-1$ we have then
-\[
-	\int \frac{\mu^i_t}{m^i_t} = 0
-\] thus equation \eqref{eq-foc_T} is redundant and we can choose $T$ to be any value.  For simplicity we set $T=0$.
-
-\section{Quasi Linear utility}
+\subsection{Special cases}
 With quasilinear utility and absent non-negativity constraints, we have a simple expression for how taxes depend on the distribution of initial Pareto weights.
 
-XXXXX
+ 
+\begin{equation}
+	\label{eq-ql-taxes}
+\frac{1}{1-\tau}=\frac{\hat{Y}}{Y}	
+\end{equation}   
 
-With risk aversion there will be two competing forces
+where $\bar{w}^{i}_t$ weights used in computing $\hat{Y}$ are given by $1+\gamma(\omega^i-1)$. We can quickly draw some implications from this. 
+\begin{itemize}
+\item Taxes are constant through time.
+\item If $\omega^i=1$, taxes are zero.
+\item Suppose productivities are iid over time,  taxes will be close to zero.
+\item Suppose productivities have a permenant component, taxes will be positive if agents with high productivities have low pareto weights and vice versa
+\end{itemize}
+\subsection{Risk aversion}
 
-Spreads in marginal utilities
 
-covariance between consumption and output that affects net costs of extracting resources  
+With risk aversion we have spreads in marginal utilities. This generates a desire to use transfers even if $\omega^i=1$.To examine this in detail conisder two extreme economies. The first has iid productivity shocks $(\rho=0)$ and the second one has permenant productivity shocks $(\rho=1)$\footnote{XXX stationarity}.
 
-What is the relationship between 
 
+The term  $\frac{\bar{w}_t }{\lambda_t}$ captures increase in the welfare from transfers relative to the value of resources (note $\lambda$ is a multiplier on the resource constraint.) Thus a higher value for this term would imply larger role of taxes and consequent transfers. 
+
+The first term $\frac{\hat{Y_t}}{Y_t}$ is increasing in the covariance between $\bar{w}^i_t$ and $y^i_t$ labor earnings. Notice that these weights $\bar{w}^i_t$ are decreasing in the multiplier on the budget constraint of agent $i$ : $\mu_t^i$. 
+
+Consider the case where shocks to productivities are predominatly transitory.   Agents save most of the shock for precautionary reasons. Overtime the agents with a unlucky stream of shocks will have lower wealth and low consumption and lower leisure. This will imply a lower $\bar{w}^i_t$ and higher $y^i_t$ for such agents. The optimal response of government is to lower taxes and possibly give labor tax subsidies. 
+
+In the case where productivities have a permenant component, the output $y^i$ will be higher for productive agents. These agents will also have higher wealth shares. This would make $y^i_t$ and $\bar{w}^i_t$ positively correlated and call for higher taxes. 
+
+The next two sections describe the computational algorithm for computing an approximation for the Ramsey allocation for this economy.
 
 \section{Deterministic Steady State}
 We first look at an economy with $q=0$. Given a joint distribution $\Gamma_0(\xi)$ the non-stochastic steady state is described by an allocation $c(\xi), l(\xi), x(\xi)$ and aggregate labor taxes $\tau$. 
@@ -300,17 +321,10 @@ The aggregates $(\alpha,\tau,\lambda)$ solve
 \end{enumerate}
 
 
-  \section{Results}
-We use the methods describe to compute solutions to two extreme economies. The first has iid productivity shocks $(\rho=0)$ and the second one has permenant productivity shocks $(\rho=1)$\footnote{XXX stationarity}.
+  \section{Numerical results}
+We use the methods describe to compute solutions to two extreme economies. 
 
-Why these two cases ?
-
-
-
-  These two economies by construction have very different implications how the agents respond to productivity shocks. This allows us to examine the second force outlined before in more detail.
-
-Results in words
-
+Calibration  
 
 Graphs
 

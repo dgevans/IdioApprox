@@ -297,7 +297,7 @@ The aggregates $(\alpha,\tau,\lambda)$ solve
 
   \section{Approximation}
   
-
+{\color{blue}
   Collect the individual policy rules in $y(\xi,\epsilon|\Gamma,q)$ and the aggregates as $Y(\Gamma)$. The laws of motion for the state variables are defined by $\xi'(\xi,\epsilon|\Gamma,q)$ and $\Gamma'=\Phi(\Gamma,q)$.
 \begin{enumerate}
 
@@ -318,24 +318,90 @@ The aggregates $(\alpha,\tau,\lambda)$ solve
 
 \item How is it actually implemented ?
 \item Remarks - what are the class of problems this can work? extensions etc
-\end{enumerate}
-For the individual variables let $y$ be the control variables, $\xi$ be the  state variables, and  $\epsilon$ be the idiosyncratic shock.  The aggregate state of the economy is described by the distribution $\Gamma$ over $\xi$, and $Y$ are defined to be the aggregate control variables.  The system of equations that defines our model can be separated into two parts
-\begin{equation}
-	F(y^i_t,\xi^i_{t-1}, \EE_{t-1} y^i_t, Y_t, y^i_{t+1} ,\epsilon^i_t) = 0 
+\end{enumerate}}
+For the individual variables let $y$ be the control variables, $\xi$ be the  state variables, and  $\epsilon$ be the idiosyncratic shock.  The aggregate state of the economy is described by the distribution $\Gamma$ over $\xi$, and $Y$ is defined to be the aggregate control variable.  The system of equations that defines our model can be separated into two parts
+\begin{equation}\label{eq.ind_con}
+	F(y_t, \EE_{t-1} y_t, Y_t, \EE_t y_{t+1} ,\epsilon_t| \xi_{t-1},q,\Gamma_t) = 0  \text{  for all $\xi_{t-1}$}
 \end{equation}and
-\begin{equation}
-	\int G(y^i_t, \xi^i_{t-1},Y_t,\epsilon^i_t) d\Gamma(\xi^i_{t-1}) = 0
-\end{equation}   There are two major differences between this a setup and the standard way of linearizing models.  The first is the separation between aggregate and individual constraints.   The second is the inclusion of the term  $\EE_{t-1} y^i_t$ which allows us to impose the measurability restrictions associated with incomplete markets.  Specifically, $x^i_{t-1}$ should be independent of the realization of the shock $\epsilon^i_t$ and $\rho^i_{t-1}$ should be independent of the realization of $\epsilon^i_{t-1}$.  We want to find the functions $y^i_t= y(\epsilon^i_t | \xi^i_{t-1},\Gamma)$, $\xi^i_t = \xi'(\epsilon^i_t | \xi^i_{t-1},\Gamma)$, and $Y_t = Y(\Gamma)$ that solve those systems.  The law of motion for $\xi^i_t$ induces a law of motion $\Gamma_t = \Gamma'(\Gamma_{t-1})$.
+\begin{equation}\label{eq.agg_con}
+	\int G(y_t,,Y_t,\epsilon_t|\xi_{t-1},q,\Gamma_t) d\Gamma_t(\xi_{t-1})d\epsilon_t = 0
+\end{equation}  Here $F$ in equation \eqref{eq.ind_con} represents the constraints on the individual variables while equation \eqref{eq.agg_con} represents the constraints on the aggregate variables.  There are two major differences between this a setup and the standard way of linearizing models.  The first is the aforementioned separation between aggregate and individual constraints.   The second is the inclusion of the term  $\EE_{t-1} y_t$ which allows us to impose the measurability restrictions associated with incomplete markets.  Specifically, $x_{t-1}$ should be independent of the realization of the shock $\epsilon_t$ and $\rho^1_{t-1}$ should be independent of the realization of $\epsilon_{t-1}$.  We want to find the policy functions $y_t= y(\epsilon^i| \xi^i_{t-1},q,\Gamma)$ and  $Y_t = Y(q,\Gamma_t)$ that solve those systems.  As next period's state $\xi_t$ can be written as a subset of the controls $y_t$, the function $y(\epsilon^i| \xi^i_{t-1},q,\Gamma)$ induces a law of motion of the individual states $\xi_t = \xi(\xi_{t-1}|q,\Gamma_t)$.  This along with the distribution $\epsilon_t$ allows us to construct the law of motion for the aggregate state $\Gamma_{t+1} = \Gamma(\Gamma_t | q)$.
 
 The key insight to begin this analysis is that at the limit where $q = 0$ the law of motion for the idiosyncratic state variable is identity, that is,
 \[
-	\xi'(\xi,\Gamma) = \xi 
-\] for all $\xi$ and $\Gamma$.  This, in turn, implies that $\Gamma'(\Gamma) = \Gamma$ when $q=0$, and thus all distributions of the state variable are steady states of the economy.  Our goal is then to produce a polynomial approximation to the individual policy rules with respect to the size of the idiosyncratic shock $q$.  Specifically we get that 
-\[
-	y(\epsilon^i | \xi^i,\Gamma) \approx a(\xi^i,\Gamma) + b(\xi^i,\Gamma) q\epsilon + c(\xi^i,\Gamma) q^2 + d(\xi^i,\Gamma)(q\epsilon^i_t)^2
-\]A feature of this approach is that the coefficients of these policy rules now depend non-linearly on both the joint distribution of state variables $\Gamma$ and the individual state variable $\xi^i$.
+	\xi(\xi_{t-1}|0,\Gamma) = \xi_{t-1}
+\] for all $\xi$ and $\Gamma$.  This, in turn, implies that $\Gamma(\Gamma_{t}|0) = \Gamma_{t}$ when $q=0$.  All possible distributions $\Gamma$ are stationary non-stochastic steady states.   We will then use a perturbation approach to approximate locally around a choice of steady state $\Gamma$.
 
-  \section{Numerical results}
+\subsection{Linear Approximation}
+We will begin with a linear approximation.  Choose any candidate $\overline \Gamma$ as the steady state around which we will approximate the policy rules.  For convenience we will label each agent by $i\in(0,1)$.  Let $\overline \xi^i$ be the steady state value of $\xi$ for agent $i$.  Similarly let $\hat \xi^i_{t-1}  = \xi^i_{t-1} - \overline\xi^i$ be the deviation from the steady state for agent $i$.  This describes the current aggregate state $\Gamma_t$.  We first want to find the linear approximation $\hat Y_t = Y_t - \overline Y$.  This will be the sum of all the linear contributions of $\hat \xi^i_t$:
+\begin{equation}\label{eq.Yhat}
+	\hat Y_t = \int dY^i_{\xi} \hat \xi^i_{t-1} di
+\end{equation}  Note that here $dY^i_\xi$ depends on the individual steady state value $\overline \xi^i$ as well as the global steady state $\overline \Gamma$.  The linear approximation  $\hat y^i_t = y^i_t -\overline y^i$ is a combination to the linear contributions of $\xi^i_{t-1}$, $\epsilon^i_t$ and the aggregation of the contributions of $\xi^j_{t-1}$ for $j\neq i$, thus
+\[
+	\hat y^i_t = dy^i_\xi \hat\xi^i_{t-1} +  dy^i_\epsilon q\epsilon^i_t + \int dy^{i,j}_\gamma \hat \xi^j_{t-1} dj
+\]  We can simplify this further by realizing that the contribution of $\hat \xi^j_t$ to $\hat \xi^i_t$ come through GE contributions via the aggregate variables.  Thus we can express the linearization of the individual controls as 
+\begin{equation}\label{eq.y_hat}
+	\hat y^i_t =  dy^i_\xi \hat\xi^i_{t-1} +  dy^i_\epsilon q\epsilon^i_t + dy^i_Y \hat Y_t
+\end{equation}  Given that the policy rule for $\hat \xi^i_t$ is stationary at $q=0$ we know that the policy rules for the state variables will be 
+\[
+	\hat \xi^i_t = \xi^i_{t-1} + d\xi^i_\epsilon q\epsilon^i_t
+\]  We can use these to forecast the aggregate variables next period
+\[
+	\hat Y_{t+1} = \int dY^i_\xi \xi^i_{t} di= \int dY^i_\xi(\hat \xi^i_{t-1}  + d\xi^i_\epsilon q\epsilon^i_t)di = \hat Y_t
+\]here use the property that we are integrating over a continuum to integrate out the effects of $\epsilon^i_t$ which are mean zero.  Thus, the forecast of future controls satisfies
+\[
+	\EE_t \hat y^i_{t+1} = dy^i_\xi \hat\xi^i_{t-1}  + dy^i_Y \hat Y_t + dy^i_\xi d\xi^i_\epsilon q\epsilon^i_t	
+\]Differentiating the constrain in equation \eqref{eq.ind_con} an constructing the projection matrix $I^\xi_y$ such that $\hat xi^i_t = I^\xi_y \hat y^i_t$ we obtain
+\[
+	F^i_y\hat y^i_t + F^i_{Ey}\EE_{t-1}\hat y^i_{t} + F^i_Y \hat Y_t + F^i_{Ey'} \EE_t\hat y^i_{t+1} + F^i_\epsilon q\epsilon^i_t + F^i_\xi \hat \xi^i_{t-1} = 0
+\]We can then plug in the formulas described above and combine like terms to derive the expressions
+\begin{subequations}
+\begin{equation}
+	dy^i_\xi = -(F^i_y + F^i_{Ey} + F^i_{Ey'})^{-1}F^i_\xi \hat\xi^i_{t-1}
+\end{equation}
+\begin{equation}
+	dy^i_\epsilon = -(F^i_y + F^i_{Ey'} dy^i_\xi I^\xi_y)^{-1} F^i_\epsilon 
+\end{equation}
+\begin{equation}
+	dy^i_Y = -(F^i_y + F^i_{Ey} + F^i_{Ey'})^{-1} F^i_Y
+\end{equation}
+\end{subequations}Finally, we can use the aggregate constraints
+\[
+	\int\left[ G^i_y \hat y^i_t + G^i_Y \hat Y_t+ G^i_\xi \hat \xi^i_{t-1}\right]di = 0
+\]to obtain
+\begin{equation}
+	dY^i_\xi =- \left(\int G^i_y dy^i_Y + G^i_Ydi\right)^{-1}\left(G^i_y dy^i_\xi + G^i_\xi\right)
+\end{equation}
+\subsection{A Quadratic Approximation}
+Given that the choice of $\overline \Gamma$ is arbitrary, it seems unnecessary to compute $dY^i_\xi$ as we can always choose our approximating steady state to be $\Gamma_t$ and thus set $\hat xi^i_{t-1} =0$.  We must bear in mind that our agents our forward looking and thus will be making predictions about future realizations of aggregate variables (such as interest rates).  In the linear approximation uncertainty washes due to certainty equivalence, but with a quadratic approximation uncertainty enters.  The values for $dY^i_\xi$ are necessary to compute the effects of uncertainty tomorrow on the allocations today.
+
+The precise methods for computing the quadratic approximation of the policy rules are technical and will be left to an appendix.  We can express the resulting policy rules as follows.  Creating the stacked variable 
+\[
+	\hat S^i_t = \left(\bmat \hat \xi^i_{t-1}\\ \int dY^i_\xi \xi^i_{t-1}di\emat\right)
+\]we can express $\hat Y_t$ as 
+\begin{equation}
+	\hat Y_t = \int\left[ dY^i_\xi \hat \xi^i_{t-1} + \frac12(\hat S^i_t)' dY^i_{SS}\hat S^i_t \right]di + \frac12 dY_{q^2} q^2
+\end{equation} and 
+\begin{equation}
+	\hat y^i_t = dy^i_\xi \hat \xi^i_{t-1} + dy^i_\epsilon q\epsilon^i_t + dy^i_Y \hat Y_t  + \frac12\left[ (\hat S^i_t)' dy^i_{SS} \hat S^i_t + (\hat S^i_t)' dy^i_{S\epsilon}q\epsilon^i_t + (q\epsilon^i_t)' dy^i_{\epsilon S} \hat S^i_t + dy^i_{\epsilon\epsilon}q^2(\epsilon^i_t)^2 + dy^i_{q^2}q^2  \right]
+\end{equation}  Note that  $dy^i_{q^2}$ incorporates the GE effect given by
+\[
+	\hat Y_{t+1} = \hat Y_t +\frac{1}{2} \int\left[ dY^i_\xi I^\xi_y(dy^i_{\epsilon\epsilon}+dy^i_{q^2}) + (I^\xi_y dy^i_\epsilon)'dY^i_{\xi\xi}I^\xi_y dy^i_\epsilon \right]di q^2
+\]
+\subsection{Implementation}
+We can implement this algorithm as follows:
+\begin{enumerate}
+\item  Begin with a distribution $\Gamma_t$, using this as the non-stochastic steady state approximate the policy rules
+\[
+y^i_t = \overline y^i +  dy^i_\epsilon q\epsilon^i_t + \frac12\left[dy^i_{\epsilon\epsilon}q^2(\epsilon^i_t)^2 + dy^i_{q^2}q^2 + dy^i_YdY_{q^2} q^2\right]
+\]and 
+\[
+	Y_t = \overline Y + \frac12 dY_{q^2}q^2
+\]
+\item  Use these policy rules to construct a new distribution $\Gamma_{t+1}$ (in our case approximate $\Gamma_t$ with $N$ agents and draw $\Gamma_{t+1}$ via the policy rules)
+\item  Go back to step 1.
+\end{enumerate}
+  \section{Numerical results}  
 We use the methods describe to compute solutions to two extreme economies. 
 
 Calibration  

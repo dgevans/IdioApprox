@@ -5,7 +5,7 @@ Created on Sat Apr 19 19:49:53 2014
 @author: dgevans
 """
 import simulate
-import calibrate_begs_iid as Para
+import calibrate_begs_pers_log as Para
 import numpy as np
 
 
@@ -16,7 +16,7 @@ Gamma[0][:,0] = np.zeros(100)
 
 
 v = simulate.v
-v.execute('import calibrate_begs_iid as Para')
+v.execute('import calibrate_begs_pers_log as Para')
 v.execute('import approximate_parallel as approximate')
 v.execute('approximate.calibrate(Para)')
 simulate.simulate(Para,Gamma,Y,Shocks,y,10)

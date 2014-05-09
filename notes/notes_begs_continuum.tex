@@ -298,7 +298,21 @@ The aggregates $(\alpha,\tau,\lambda)$ solve
 \item How is it actually implemented ?
 \item Remarks - what are the class of problems this can work? extensions etc
 \end{enumerate}
+For the individual variables let $y$ be the control variables, $\xi$ be the  state variables, and  $\epsilon$ be the idiosyncratic shock.  The aggregate state of the economy is described by the distribution $\Gamma$ over $\xi$, and $Y$ are defined to be the aggregate control variables.  The system of equations that defines our model can be separated into two parts
+\begin{equation}
+	F(y^i_t,\xi^i_{t-1}, \EE_{t-1} y^i_t, Y_t, y^i_{t+1} ,\epsilon^i_t) = 0 
+\end{equation}and
+\begin{equation}
+	\int G(y^i_t, \xi^i_{t-1},Y_t,\epsilon^i_t) d\Gamma(\xi^i_{t-1}) = 0
+\end{equation}   There are two major differences between this a setup and the standard way of linearizing models.  The first is the separation between aggregate and individual constraints.   The second is the inclusion of the term  $\EE_{t-1} y^i_t$ which allows us to impose the measurability restrictions associated with incomplete markets.  Specifically, $x^i_{t-1}$ should be independent of the realization of the shock $\epsilon^i_t$ and $\rho^i_{t-1}$ should be independent of the realization of $\epsilon^i_{t-1}$.  We want to find the functions $y^i_t= y(\epsilon^i_t | \xi^i_{t-1},\Gamma)$, $\xi^i_t = \xi'(\epsilon^i_t | \xi^i_{t-1},\Gamma)$, and $Y_t = Y(\Gamma)$ that solve those systems.  The law of motion for $\xi^i_t$ induces a law of motion $\Gamma_t = \Gamma'(\Gamma_{t-1})$.
 
+The key insight to begin this analysis is that at the limit where $q = 0$ the law of motion for the idiosyncratic state variable is identity, that is,
+\[
+	\xi'(\xi,\Gamma) = \xi 
+\] for all $\xi$ and $\Gamma$.  This, in turn, implies that $\Gamma'(\Gamma) = \Gamma$ when $q=0$, and thus all distributions of the state variable are steady states of the economy.  Our goal is then to produce a polynomial approximation to the individual policy rules with respect to the size of the idiosyncratic shock $q$.  Specifically we get that 
+\[
+	y(\epsilon^i | \xi^i,\Gamma) \approx a(\xi^i,\Gamma) + b(\xi^i,\Gamma) q\epsilon + c(\xi^i,\Gamma) q^2 + d(\xi^i,\Gamma)(q\epsilon^i_t)^2
+\]A feature of this approach is that the coefficients of these policy rules now depend non-linearly on both the joint distribution of state variables $\Gamma$ and the individual state variable $\xi^i$.
 
   \section{Results}
 We use the methods describe to compute solutions to two extreme economies. The first has iid productivity shocks $(\rho=0)$ and the second one has permenant productivity shocks $(\rho=1)$\footnote{XXX stationarity}.

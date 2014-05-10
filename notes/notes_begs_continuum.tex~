@@ -296,36 +296,36 @@ The aggregates $(\alpha,\tau,\lambda)$ solve
    \end{subequations}
 
   \section{Approximation}
-%   
-% {\color{blue}
-%   Collect the individual policy rules in $y(\epsilon|\xi,\Gamma,q)$ and the aggregates as $Y(\Gamma)$. The laws of motion for the state variables are defined by $\xi'(\epsilon|\xi,\Gamma,q)$ and $\Gamma'=\Gamma(\Gamma,q)$.
-% \begin{enumerate}
-% 
-% 
-% \item What is the goal ?
-% 
-%   The goal is to obtain an approximation of the individual policy rules and aggregate variables using pertubation around $q=0$ for an aribrary choice of $\Gamma$. Thus even with a first order exapansion, how agents respond to shocks will depend both on the aggregate distribution  $\Gamma$ and individual state variables $\xi$
-% 
-% \item What are the challanges
-% 
-%   \begin{itemize}
-%   \item Agggregating across agents 
-%   \item Forecasting future aggregate variables
-%   \item Accounting for GE effects of higher order terms
-%   \end{itemize}
-% 
-% \item What are the ``tricks'' ?
-%   \begin{itemize}
-%   \item Exploiting that the steady state is a complete market economy where individual state variables are stationary
-%   \end{itemize}
-% 
-% 
-% 
-% \item How is it actually implemented ?
-% 
-% \item Remarks - what are the class of problems this can work? extensions etc
-% 
-% \end{enumerate}}
+  
+{\color{blue}
+  Collect the individual policy rules in $y(\epsilon|\xi,\Gamma,q)$ and the aggregates as $Y(\Gamma)$. The laws of motion for the state variables are defined by $\xi'(\epsilon|\xi,\Gamma,q)$ and $\Gamma'=\Gamma(\Gamma,q)$.
+\begin{enumerate}
+
+
+\item What is the goal ?
+
+  The goal is to obtain an approximation of the individual policy rules and aggregate variables using pertubation around $q=0$ for an aribrary choice of $\Gamma$. Thus even with a first order exapansion, how agents respond to shocks will depend both on the aggregate distribution  $\Gamma$ and individual state variables $\xi$
+
+\item What are the challanges
+
+  \begin{itemize}
+  \item Agggregating across agents 
+  \item Forecasting future aggregate variables
+  \item Accounting for GE effects of higher order terms
+  \end{itemize}
+
+\item What are the ``tricks'' ?
+  \begin{itemize}
+  \item Exploiting that the steady state is a complete market economy where individual state variables are stationary
+  \end{itemize}
+
+
+
+\item How is it actually implemented ?
+
+\item Remarks - what are the class of problems this can work? extensions etc
+
+\end{enumerate}}
 
 
 For the individual variables let $y$ be the control variables, $\xi$ be the  state variables, and  $\epsilon$ be the idiosyncratic shock.  The aggregate state of the economy is described by the distribution $\Gamma$ over $\xi$, and $Y$ is defined to be the aggregate control variable.  The system of equations that defines our model can be separated into two parts

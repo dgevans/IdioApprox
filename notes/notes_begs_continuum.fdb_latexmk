@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1399665514 "notes_begs_continuum.tex" "notes_begs_continuum.pdf" "notes_begs_continuum" 
+["pdflatex"] 1399730834 "notes_begs_continuum.tex" "notes_begs_continuum.pdf" "notes_begs_continuum" 
   "/etc/texmf/tex/latex/config/color.cfg" 1254097189 802 7b8c8d72c24d795ed7720e4dfd29bff3 ""
   "/etc/texmf/tex/latex/config/graphics.cfg" 1255993321 3328 2584cfe577535f0a08f3a9717b5152ab ""
   "/usr/share/texmf-texlive/tex/context/base/supp-pdf.mkii" 1251025892 71625 fad1c4b52151c234b6873a255b0ad6b3 ""
@@ -52,9 +52,9 @@
   "/usr/share/texmf-texlive/tex/latex/oberdiek/xcolor-patch.sty" 1255303176 5052 88940643df6f2cc4451905f5b43cfa56 ""
   "/usr/share/texmf-texlive/tex/latex/pdftex-def/pdftex.def" 1322143080 40817 59149cdca908875781bb2f74014004ed ""
   "/usr/share/texmf-texlive/tex/latex/tools/bm.sty" 1254151720 11823 9bcc8ce3d4bd33b432b9fc9543d4666e ""
-  "notes_begs_continuum.aux" 1399665515 4114 55d3e2a7e62928bd9aef2d8652d83fbe ""
-  "notes_begs_continuum.out" 1399665515 665 7b1feda55fd68b1723e5f3ad4e5eafa6 ""
-  "notes_begs_continuum.tex" 1399665501 20362 b117153c0f64d53a1a1d88de39f2df9e ""
+  "notes_begs_continuum.aux" 1399730834 4979 855e8fe7884614030433d86a4023f704 ""
+  "notes_begs_continuum.out" 1399730834 707 1988384ef1e8c292963d513ba25de360 ""
+  "notes_begs_continuum.tex" 1399730810 22440 1351de02758fd89866298734538c8c90 ""
   (generated)
   "notes_begs_continuum.pdf"
   "notes_begs_continuum.log"

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.10.23)  9 MAY 2014 15:58
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2013.10.23)  10 MAY 2014 10:14
 entering extended mode
  %&-line parsing enabled.
 **notes_begs_continuum.tex
@@ -141,11 +141,10 @@ Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
 (/etc/texmf/tex/latex/config/graphics.cfg
 File: graphics.cfg 2009/08/28 v1.8 graphics configuration of TeX Live
 )
-Package graphics Info: Driver file: pdftex.def on input line 91.
+Package graphics Info: Driver file: dvips.def on input line 91.
 
-(/usr/share/texmf-texlive/tex/latex/pdftex-def/pdftex.def
-File: pdftex.def 2010/03/12 v0.04p Graphics/color for pdfTeX
-\Gread@gobject=\count109
+(/usr/share/texmf-texlive/tex/latex/graphics/dvips.def
+File: dvips.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
 ))
 \Gin@req@height=\dimen117
 \Gin@req@width=\dimen118
@@ -156,8 +155,11 @@ Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
 (/etc/texmf/tex/latex/config/color.cfg
 File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
 )
-Package color Info: Driver file: pdftex.def on input line 130.
-)
+Package color Info: Driver file: dvips.def on input line 130.
+
+(/usr/share/texmf-texlive/tex/latex/graphics/dvipsnam.def
+File: dvipsnam.def 1999/02/16 v3.0i Driver-dependant file (DPC,SPQR)
+))
 (/usr/share/texmf-texlive/tex/latex/oberdiek/refcount.sty
 Package: refcount 2008/08/11 v3.1 Data extraction from references (HO)
 )
@@ -166,7 +168,7 @@ Package: natbib 2009/07/16 8.31 (PWD, AO)
 \bibhang=\skip46
 \bibsep=\skip47
 LaTeX Info: Redefining \cite on input line 694.
-\c@NAT@ctr=\count110
+\c@NAT@ctr=\count109
 )
 (/usr/share/texmf-texlive/tex/latex/tools/bm.sty
 Package: bm 2004/02/26 v1.1c Bold Symbol Support (DPC/FMi)
@@ -181,7 +183,7 @@ Package: hyperref 2009/10/09 v6.79a Hypertext links for LaTeX
 
 (/usr/share/texmf-texlive/tex/generic/oberdiek/ifpdf.sty
 Package: ifpdf 2009/04/10 v2.0 Provides the ifpdf switch (HO)
-Package ifpdf Info: pdfTeX in pdf mode detected.
+Package ifpdf Info: pdfTeX in pdf mode not detected.
 )
 (/usr/share/texmf-texlive/tex/generic/oberdiek/ifvtex.sty
 Package: ifvtex 2008/11/04 v1.4 Switches for detecting VTeX and its modes (HO)
@@ -198,8 +200,8 @@ O)
 Package: xcolor-patch 2009/10/02 xcolor patch
 ))
 \@linkdim=\dimen119
-\Hy@linkcounter=\count111
-\Hy@pagecounter=\count112
+\Hy@linkcounter=\count110
+\Hy@pagecounter=\count111
 
 (/usr/share/texmf-texlive/tex/latex/hyperref/pd1enc.def
 File: pd1enc.def 2009/10/09 v6.79a Hyperref: PDFDocEncoding definition (HO)
@@ -264,7 +266,7 @@ Package pdftexcmds Info: LuaTeX not detected.
 Package pdftexcmds Info: \pdf@primitive is available.
 Package pdftexcmds Info: \pdf@ifprimitive is available.
 )))
-\Fld@menulength=\count113
+\Fld@menulength=\count112
 \Field@Width=\dimen120
 \Fld@charsize=\dimen121
 \Field@toks=\toks22
@@ -279,15 +281,22 @@ Package hyperref Info: PDF/A mode OFF on input line 4407.
 (/usr/share/texmf-texlive/tex/generic/oberdiek/atbegshi.sty
 Package: atbegshi 2008/07/31 v1.9 At begin shipout hook (HO)
 )
-\Hy@abspage=\count114
-\c@Item=\count115
-\c@Hfootnote=\count116
+\Hy@abspage=\count113
+\c@Item=\count114
+\c@Hfootnote=\count115
 )
-*hyperref using default driver hpdftex*
-(/usr/share/texmf-texlive/tex/latex/hyperref/hpdftex.def
-File: hpdftex.def 2009/10/09 v6.79a Hyperref driver for pdfTeX
-\Fld@listcount=\count117
-)
+*hyperref using default driver hdvips*
+(/usr/share/texmf-texlive/tex/latex/hyperref/hdvips.def
+File: hdvips.def 2009/10/09 v6.79a Hyperref driver for dvips
+
+(/usr/share/texmf-texlive/tex/latex/hyperref/pdfmark.def
+File: pdfmark.def 2009/10/09 v6.79a Hyperref definitions for pdfmark specials
+\pdf@docset=\toks23
+\pdf@box=\box29
+\pdf@toks=\toks24
+\pdf@defaulttoks=\toks25
+\Fld@listcount=\count116
+))
 (/usr/share/texmf-texlive/tex/latex/oberdiek/epstopdf.sty
 Package: epstopdf 2009/10/17 v2.4 Conversion with epstopdf on the fly (HO)
 
@@ -298,27 +307,21 @@ Package: epstopdf-base 2009/10/17 v2.4 Base part for package epstopdf
 Package: grfext 2007/09/30 v1.0 Managing graphics extensions (HO)
 )
 
-Package epstopdf Warning: Shell escape feature is not enabled.
+Package epstopdf Warning: Other drivers than `pdftex.def' are not supported.
 
-Package grfext Info: Graphics extension search list:
-(grfext)             [.png,.pdf,.jpg,.mps,.jpeg,.jbig2,.jb2,.PNG,.PDF,.JPG,.JPE
-G,.JBIG2,.JB2,.eps]
-(grfext)             \AppendGraphicsExtensions on input line 433.
-(/usr/share/texmf-texlive/tex/latex/latexconfig/epstopdf-sys.cfg
-File: epstopdf-sys.cfg 2009/10/26 v1.1 Configuration of epstopdf for TeX Live
-)))
-\c@theorem=\count118
-\c@assumption=\count119
-\c@axiom=\count120
-\c@conjecture=\count121
-\c@corollary=\count122
-\c@definition=\count123
-\c@lemma=\count124
-\c@proposition=\count125
-\c@example=\count126
-\c@exercise=\count127
-\c@notation=\count128
-\c@remark=\count129
+))
+\c@theorem=\count117
+\c@assumption=\count118
+\c@axiom=\count119
+\c@conjecture=\count120
+\c@corollary=\count121
+\c@definition=\count122
+\c@lemma=\count123
+\c@proposition=\count124
+\c@example=\count125
+\c@exercise=\count126
+\c@notation=\count127
+\c@remark=\count128
 
 
 LaTeX Warning: Unused global option(s):
@@ -341,24 +344,11 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 52.
 LaTeX Font Info:    ... okay on input line 52.
 LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 52.
 LaTeX Font Info:    ... okay on input line 52.
-
-(/usr/share/texmf-texlive/tex/context/base/supp-pdf.mkii
-[Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count130
-\scratchdimen=\dimen122
-\scratchbox=\box29
-\nofMPsegments=\count131
-\nofMParguments=\count132
-\everyMPshowfont=\toks23
-\MPscratchCnt=\count133
-\MPscratchDim=\dimen123
-\MPnumerator=\count134
-\everyMPtoPDFconversion=\toks24
-)
 Package hyperref Info: Link coloring OFF on input line 52.
- (/usr/share/texmf-texlive/tex/latex/hyperref/nameref.sty
+
+(/usr/share/texmf-texlive/tex/latex/hyperref/nameref.sty
 Package: nameref 2007/05/29 v2.31 Cross-referencing by name of section
-\c@section@level=\count135
+\c@section@level=\count129
 )
 LaTeX Info: Redefining \ref on input line 52.
 LaTeX Info: Redefining \pageref on input line 52.
@@ -383,7 +373,7 @@ LaTeX Warning: No \author given.
 
 [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+]
 Overfull \hbox (50.1105pt too wide) detected at line 136
 []\OML/cmm/m/it/10.95 ![]u[] \OT1/cmr/m/n/10.95 + \OML/cmm/m/it/10.95 x[][] [] 
 \OMS/cmsy/m/n/10.95 ^^@ \OML/cmm/m/it/10.95 ^^V[]\OT1/cmr/m/n/10.95 [\OML/cmm/m
@@ -404,36 +394,29 @@ File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 219.
  [3] [4] [5] [6]
-Overfull \hbox (6.24149pt too wide) detected at line 387
+Overfull \hbox (6.24149pt too wide) detected at line 397
 [][] \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 dy[][] \OT1/cmr/m/n/10.95 + \OML/
 cmm/m/it/10.95 dy[]q^^O[] \OT1/cmr/m/n/10.95 + \OML/cmm/m/it/10.95 dy[][] \OT1/
 cmr/m/n/10.95 + [] []
  []
 
-[7] [8] (./notes_begs_continuum.aux) ) 
+[7]
+File: tax_iid.eps Graphic file (type eps)
+ <tax_iid.eps>
+File: tax_pers.eps Graphic file (type eps)
+ <tax_pers.eps>
+File: quant_iid.eps Graphic file (type eps)
+ <quant_iid.eps>
+File: quant_pers.eps Graphic file (type eps)
+ <quant_pers.eps> [8] [9]
+[10] [11] (./notes_begs_continuum.aux) ) 
 Here is how much of TeX's memory you used:
- 6121 strings out of 493848
- 84619 string characters out of 1152822
- 166199 words of memory out of 3000000
- 9208 multiletter control sequences out of 15000+50000
+ 5815 strings out of 493849
+ 80907 string characters out of 1152845
+ 157040 words of memory out of 3000000
+ 8973 multiletter control sequences out of 15000+50000
  18761 words of font info for 69 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
- 38i,8n,36p,1262b,341s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/share/texmf-texlive/fonts/type1/pub
-lic/amsfonts/cm/cmbx12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfont
-s/cm/cmex10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10
-.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/s
-hare/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-t
-exlive/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts
-/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texmf-texlive/fonts/type1/public
-/amsfonts/cm/cmr8.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/
-cmr9.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></
-usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/te
-xmf-texlive/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-texlive/
-fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on notes_begs_continuum.pdf (8 pages, 181273 bytes).
-PDF statistics:
- 218 PDF objects out of 1000 (max. 8388607)
- 72 named destinations out of 1000 (max. 500000)
- 97 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 38i,8n,36p,1069b,330s stack positions out of 5000i,500n,10000p,200000b,50000s
 
+Output written on notes_begs_continuum.dvi (11 pages, 53048 bytes).

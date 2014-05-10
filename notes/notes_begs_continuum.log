@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.10.23)  8 MAY 2014 23:44
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.10.23)  9 MAY 2014 15:58
 entering extended mode
  %&-line parsing enabled.
 **notes_begs_continuum.tex
@@ -403,31 +403,37 @@ File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 219.
- [3] [4] [5]
-(./notes_begs_continuum.aux) ) 
+ [3] [4] [5] [6]
+Overfull \hbox (6.24149pt too wide) detected at line 387
+[][] \OT1/cmr/m/n/10.95 = \OML/cmm/m/it/10.95 dy[][] \OT1/cmr/m/n/10.95 + \OML/
+cmm/m/it/10.95 dy[]q^^O[] \OT1/cmr/m/n/10.95 + \OML/cmm/m/it/10.95 dy[][] \OT1/
+cmr/m/n/10.95 + [] []
+ []
+
+[7] [8] (./notes_begs_continuum.aux) ) 
 Here is how much of TeX's memory you used:
- 6094 strings out of 493848
- 84305 string characters out of 1152822
- 164019 words of memory out of 3000000
- 9201 multiletter control sequences out of 15000+50000
+ 6121 strings out of 493848
+ 84619 string characters out of 1152822
+ 166199 words of memory out of 3000000
+ 9208 multiletter control sequences out of 15000+50000
  18761 words of font info for 69 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
- 38i,8n,36p,472b,362s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/share/texmf-texlive/fonts/type1/public/amsf
-onts/cm/cmbx12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cme
-x10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></u
-sr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/tex
-mf-texlive/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-texlive/f
-onts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/p
-ublic/amsfonts/cm/cmr6.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfont
-s/cm/cmr8.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr9.pfb
-></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/shar
-e/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texmf-texl
-ive/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-texlive/fonts/ty
-pe1/public/amsfonts/symbols/msbm10.pfb>
-Output written on notes_begs_continuum.pdf (5 pages, 160881 bytes).
+ 38i,8n,36p,1262b,341s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/share/texmf-texlive/fonts/type1/pub
+lic/amsfonts/cm/cmbx12.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfont
+s/cm/cmex10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10
+.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/s
+hare/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-t
+exlive/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts
+/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texmf-texlive/fonts/type1/public
+/amsfonts/cm/cmr8.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/
+cmr9.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></
+usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/te
+xmf-texlive/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf-texlive/
+fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on notes_begs_continuum.pdf (8 pages, 181273 bytes).
 PDF statistics:
- 172 PDF objects out of 1000 (max. 8388607)
- 52 named destinations out of 1000 (max. 500000)
- 73 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 218 PDF objects out of 1000 (max. 8388607)
+ 72 named destinations out of 1000 (max. 500000)
+ 97 words of extra memory for PDF output out of 10000 (max. 10000000)
 

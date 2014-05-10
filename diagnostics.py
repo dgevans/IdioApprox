@@ -4,6 +4,8 @@ import simulate
 import calibrate_begs_iid as Para
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
 Gamma,Y, Shocks, y= {},{},{},{}
 N=1000
 T=100
@@ -52,14 +54,14 @@ def get_quantiles(var):
     low_q=var_data.quantile(.25,axis=0)
     m_q=var_data.quantile(.5,axis=0)
     high_q=var_data.quantile(.75,axis=0)    
-    plot(array([low_q,m_q,high_q]).T)
+    plot(np.array([low_q,m_q,high_q]).T)
     return low_q,m_q,high_q
 
 
-def get_corr(var_1,var_2):
-    corr_data= map(lambda t: np.corrcoef(panel_data.minor_xs(var_1)[t],panel_data.minor_xs(var_2)[t])[0,1],range(T-1))
-    plot(corr_data)
-    return corr_data
+def get_cov(var_1,var_2):
+    cov_data= map(lambda t: np.cov(panel_data.minor_xs(var_1)[t],panel_data.minor_xs(var_2)[t])[0,1],range(T-1))
+    
+    return cov_data
 
 
 
@@ -70,5 +72,38 @@ def get_scatter(var_1,var_2,t):
 
 
 def plot_agg_var(var): 
-    plot(map(lambda t: Y[t][indx_Y[var]],range(T-1)))
+    time_series_data=map(lambda t: Y[t][indx_Y[var]],range(T-1))    
+    plot(time_series_data)
+    return time_series_data
     
+
+
+
+
+
+
+plt.subplot(2, 2, 1)
+low_q,m_q,high_q=get_quantiles('c')
+
+plt.plot(np.array([low_q,m_q,high_q]).T)
+plt.title('consumption')
+
+plt.subplot(2, 2, 2)
+low_q,m_q,high_q=get_quantiles('y')
+
+plt.plot(np.array([low_q,m_q,high_q]).T)
+plt.title('output')
+
+
+plt.subplot(2, 2, 3)
+low_q,m_q,high_q=get_quantiles('l')
+
+plt.plot(np.array([low_q,m_q,high_q]).T)
+plt.title('output')
+
+plt.subplot(2, 2, 4)
+cov_data_c_y=get_cov('c','y')
+plt.plot(cov_data_c_y)
+
+
+plot_agg_var('taxes')

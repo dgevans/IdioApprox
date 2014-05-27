@@ -12,7 +12,7 @@ from IPython.parallel import Reference
 c = Client()
 v = c[:] 
 
-def simulate(Para,Gamma,Y,Shocks,y,T,T0=0):
+def simulate(Para,Gamma,Y,Shocks,y,T,T0=0,quadratic = True):
     '''
     Simulates a sequence of state path for a given Para
     '''
@@ -20,11 +20,11 @@ def simulate(Para,Gamma,Y,Shocks,y,T,T0=0):
     t = T0+1
     while t< T:
         print t
-        Gamma[t],Y[t-1], Shocks[t-1],y[t-1]= update_state_parallel(Para,Gamma[t-1])
+        Gamma[t],Y[t-1], Shocks[t-1],y[t-1]= update_state_parallel(Para,Gamma[t-1],quadratic)
         t += 1
     return Gamma,Y,Shocks,y
     
-def update_state_parallel(Para,Gamma):
+def update_state_parallel(Para,Gamma,quadratic = True):
     '''
     Updates the state using parallel code
     '''
@@ -33,7 +33,7 @@ def update_state_parallel(Para,Gamma):
     v.execute('approx = approximate.approximate(Gamma)')
     approx = Reference('approx')
     
-    Gamma_new,Y,Shocks,y = v.apply(lambda approx: approx.iterate(),approx)[0]
+    Gamma_new,Y,Shocks,y = v.apply(lambda approx,quadratic = quadratic: approx.iterate(quadratic),approx)[0]
     return Para.nomalize(Gamma_new.copy()),Y.copy(),Shocks.copy(),y.copy()
 
 def update_state(Para,Gamma):

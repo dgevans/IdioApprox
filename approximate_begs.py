@@ -12,8 +12,6 @@ from utilities import hashable_array
 from utilities import quadratic_dot
 from utilities import dict_fun
 import itertools
-from scipy.stats import norm
-from scipy.integrate import quad
 
 from mpi4py import MPI
 
@@ -59,27 +57,29 @@ def parallel_dict_map(F,l):
 F =None
 G = None
 f = None
-EulerError = None
 
 n = None
+nG = None
 ny = None
 ne = None
 nY = None
 nz = None
 nv = None
+n_p = None
 Ivy = None
 Izy = None
+Para = None
 
-y,e,Y,z,v,eps,S,sigma = [None]*8
+y,e,Y,z,v,eps,Eps,p,S,sigma,sigma_E = [None]*11
 #interpolate = utilities.interpolator_factory([3])
 
-def calibrate(Para):
-    global F,G,f,ny,ne,nY,nz,nv,n,Ivy,Izy
-    global y,e,Y,z,v,eps,S,sigma
-    global EulerError
+def calibrate(Parahat):
+    global F,G,f,ny,ne,nY,nz,nv,n,Ivy,Izy,nG,n_p
+    global y,e,Y,z,v,eps,p,S,sigma,Eps,sigma_E,Para
+    Para = Parahat
     #global interpolate
     F,G,f = Para.F,Para.G,Para.f
-    ny,ne,nY,nz,nv,n = Para.ny,Para.ne,Para.nY,Para.nz,Para.nv,Para.n
+    ny,ne,nY,nz,nv,n,nG,n_p = Para.ny,Para.ne,Para.nY,Para.nz,Para.nv,Para.n,Para.nG,Para.n_p
     Ivy,Izy = np.zeros((nv,ny)),np.zeros((nz,ny)) # Ivy given a vector of y_{t+1} -> v_t and Izy picks out the state
     Ivy[:,-nv:] = np.eye(nv)
     Izy[:,:nz] = np.eye(nz)
@@ -91,15 +91,18 @@ def calibrate(Para):
     Y = np.arange(ny+ne,ny+ne+nY).view(hashable_array)
     z = np.arange(ny+ne+nY,ny+ne+nY+nz).view(hashable_array)
     v = np.arange(ny+ne+nY+nz,ny+ne+nY+nz+nv).view(hashable_array)
-    eps = np.arange(ny+ne+nY+nz+nv,ny+ne+nY+nz+nv+1).view(hashable_array)
+    p = np.arange(ny+ne+nY+nz+nv,ny+ne+nY+nz+nv+n_p).view(hashable_array)
+    eps = np.arange(ny+ne+nY+nz+nv+n_p,ny+ne+nY+nz+nv+n_p+1).view(hashable_array)
+    Eps = np.arange(ny+ne+nY+nz+nv+n_p+1,ny+ne+nY+nz+nv+n_p+2).view(hashable_array)
     
     S = np.hstack((z,Y)).view(hashable_array)
     
     sigma = Para.sigma_e
-    EulerError = Para.EulerError
+    
+    sigma_E = Para.sigma_E
+    
     #interpolate = utilities.interpolator_factory([3]*nz) # cubic interpolation
     steadystate.calibrate(Para)
-    
 
 class approximate(object):
     '''
@@ -144,7 +147,7 @@ class approximate(object):
         ebar = f(ybar)
         
         return np.hstack((
-        ybar,ebar,Ybar,ybar[:nz],Ivy.dot(ybar),0.
+        ybar,ebar,Ybar,ybar[:nz],Ivy.dot(ybar),1.,0.,0.
         ))
         
     def compute_dy(self):
@@ -168,6 +171,14 @@ class approximate(object):
                                     -DFi[:,eps])
                                     
         self.dy[eps] = dict_fun(dy_eps)
+        
+        def dy_Eps(z_i):   
+            DF = self.DF(z_i)    
+            DFi = DF[:-n,:]
+            return np.linalg.solve(DFi[:,y] + DFi[:,v].dot(Ivy).dot(self.dy[z](z_i)).dot(Izy),
+                                    -DFi[:,Eps])
+                                    
+        self.dy[Eps] = dict_fun(dy_Eps)
                 
         def dy_Y(z_i):
             DF = self.DF(z_i)
@@ -177,13 +188,21 @@ class approximate(object):
                                 -DFi[:,Y])
         self.dy[Y] = dict_fun(dy_Y)
         
+        def dy_YEps(z_i):   
+            DF = self.DF(z_i)    
+            DFi = DF[:-n,:]
+            return np.linalg.solve(DFi[:,y] + DFi[:,v].dot(Ivy).dot(self.dy[z](z_i)).dot(Izy),
+                                    -DFi[:,Y])
+                                    
+        self.dy[Y,Eps] = dict_fun(dy_YEps)
+        
     def linearize(self):
         '''
         Computes the linearization
         '''
         self.compute_dy()
         
-        DG = self.DG
+        DG = lambda z_i : self.DG(z_i)[nG:,:] #account for measurability constraints
         
         def DGY_int(z_i):
             DGi = DG(z_i)
@@ -196,6 +215,116 @@ class approximate(object):
             return self.DGYinv.dot(-DGi[:,z]-DGi[:,y].dot(self.dy[z](z_i)))
         
         self.dY = dict_fun(dYf)
+        
+        self.linearize_aggregate()
+        
+        self.linearize_parameter()
+    
+    def linearize_aggregate(self):
+        '''
+        Linearize with respect to aggregate shock.
+        '''
+        dy = {}
+        
+        def Fhat_y(z_i):
+            DFi = self.DF(z_i)[:-n,:]
+            return DFi[:,y] + DFi[:,v].dot(Ivy).dot(self.dy[z](z_i)).dot(Izy)
+            
+        Fhat_inv = dict_fun(lambda z_i: np.linalg.inv(Fhat_y(z_i))) 
+        
+        def dy_dYprime(z_i):
+            DFi = self.DF(z_i)[:-n,:]
+            return Fhat_inv(z_i).dot(DFi[:,v]).dot(Ivy).dot(self.dy[Y](z_i))
+            
+        dy_dYprime = dict_fun(dy_dYprime)
+        
+        temp = -np.linalg.inv( np.eye(nY) + self.integrate(lambda z_i: self.dY(z_i).dot(Izy).dot(dy_dYprime(z_i))) )
+        
+        dYprime = {}
+        dYprime[Eps] = temp.dot(
+        self.integrate(lambda z_i : self.dY(z_i).dot(Izy).dot(Fhat_inv(z_i)).dot(self.DF(z_i)[:-n,Eps]))        
+        )
+        dYprime[Y] = temp.dot(
+        self.integrate(lambda z_i : self.dY(z_i).dot(Izy).dot(Fhat_inv(z_i)).dot(self.DF(z_i)[:-n,Y]))        
+        )
+        
+        
+        dy[Eps] = dict_fun(
+        lambda z_i : -Fhat_inv(z_i).dot(self.DF(z_i)[:-n,Eps]) - dy_dYprime(z_i).dot(dYprime[Eps])        
+        )
+        
+        dy[Y] = dict_fun(
+        lambda z_i : -Fhat_inv(z_i).dot(self.DF(z_i)[:-n,Y]) - dy_dYprime(z_i).dot(dYprime[Y])         
+        )
+        
+        #Now do derivatives w.r.t G
+        DGi = dict_fun(lambda z_i : self.DG(z_i)[:-nG,:])
+        
+        DGhatinv = np.linalg.inv(self.integrate(
+        lambda z_i : DGi(z_i)[:,Y] + DGi(z_i)[:,y].dot(dy[Y](z_i))        
+        ))
+        
+        self.dY_Eps = -DGhatinv.dot( self.integrate(
+        lambda z_i : DGi(z_i)[:,Eps] + DGi(z_i)[:,y].dot(dy[Eps](z_i))          
+        ) )
+        
+        self.dy[Eps] = dict_fun(
+        lambda z_i : dy[Eps](z_i) + dy[Y](z_i).dot(self.dY_Eps)
+        )
+        
+    def linearize_parameter(self):
+        '''
+        Linearize with respect to aggregate shock.
+        '''
+        dy = {}
+        
+        def Fhat_p(z_i):
+            DFi = self.DF(z_i)[n:,:]
+            df = self.df(z_i)
+            return DFi[:,y]+ DFi[:,e].dot(df) + DFi[:,v].dot(Ivy) + DFi[:,v].dot(Ivy).dot(self.dy[z](z_i)).dot(Izy)
+            
+        Fhat_inv = dict_fun(lambda z_i: np.linalg.inv(Fhat_p(z_i))) 
+        
+        def dy_dYprime(z_i):
+            DFi = self.DF(z_i)[n:,:]
+            return Fhat_inv(z_i).dot(DFi[:,v]).dot(Ivy).dot(self.dy[Y](z_i))
+            
+        dy_dYprime = dict_fun(dy_dYprime)
+        
+        temp = -np.linalg.inv( np.eye(nY) + self.integrate(lambda z_i: self.dY(z_i).dot(Izy).dot(dy_dYprime(z_i))) )
+        
+        dYprime = {}
+        dYprime[p] = temp.dot(
+        self.integrate(lambda z_i : self.dY(z_i).dot(Izy).dot(Fhat_inv(z_i)).dot(self.DF(z_i)[n:,p]))        
+        )
+        dYprime[Y] = temp.dot(
+        self.integrate(lambda z_i : self.dY(z_i).dot(Izy).dot(Fhat_inv(z_i)).dot(self.DF(z_i)[n:,Y]))        
+        )
+        
+        
+        dy[p] = dict_fun(
+        lambda z_i : -Fhat_inv(z_i).dot(self.DF(z_i)[n:,p]) - dy_dYprime(z_i).dot(dYprime[p])        
+        )
+        
+        dy[Y] = dict_fun(
+        lambda z_i : -Fhat_inv(z_i).dot(self.DF(z_i)[n:,Y]) - dy_dYprime(z_i).dot(dYprime[Y])         
+        )
+        
+        #Now do derivatives w.r.t G
+        DGi = dict_fun(lambda z_i : self.DG(z_i)[nG:,:])
+        
+        DGhatinv = np.linalg.inv(self.integrate(
+        lambda z_i : DGi(z_i)[:,Y] + DGi(z_i)[:,y].dot(dy[Y](z_i))        
+        ))
+        
+        self.dY_p = -DGhatinv.dot( self.integrate(
+        lambda z_i : DGi(z_i)[:,p] + DGi(z_i)[:,y].dot(dy[p](z_i))          
+        ) )
+        
+        self.dy[p] = dict_fun(
+        lambda z_i : dy[p](z_i) + dy[Y](z_i).dot(self.dY_p)
+        )
+        
                               
     def get_df(self,z_i):
         '''
@@ -329,7 +458,7 @@ class approximate(object):
         '''
         Computes the second order approximation for agent of type z_i
         '''
-        DG,HG = self.DG(z_i),self.HG(z_i)
+        DG,HG = self.DG(z_i)[nG:,:],self.HG(z_i)[nG:,:,:]
         d = self.get_d(z_i)
         d2y = self.d2y
         
@@ -367,7 +496,7 @@ class approximate(object):
         '''
         Computes the second order approximation for agent of type z_i
         '''
-        DG,HG = self.DG(z_i),self.HG(z_i)
+        DG,HG = self.DG(z_i)[nG:,:],self.HG(z_i)[nG:,:,:]
         d = self.get_d(z_i)
         d2y = self.d2y
         
@@ -384,7 +513,7 @@ class approximate(object):
         '''
         Computes how dY and dy_i depend on sigma
         '''
-        DG = self.DG
+        DG = lambda z_i : self.DG(z_i)[nG:,:]
         #Now how do things depend with sigma
         self.integral_term =self.integrate(lambda z_i:
             quadratic_dot(self.d2Y[z,z](z_i),Izy.dot(self.dy[eps](z_i)),Izy.dot(self.dy[eps](z_i))).flatten()
@@ -416,30 +545,31 @@ class approximate(object):
         '''
         Iterates the distribution by randomly sampling
         '''
+        if rank == 0:
+            r = np.random.randn()
+            r = min(3.,max(-3.,r))
+            E = r*sigma_E
+        else:
+            E = None
+            
+        E = comm.bcast(E)
+        phat = Para.phat
+        
         def compute_ye(z_i):
-            e = np.random.randn()*sigma
-            return np.hstack(( self.ss.get_y(z_i).flatten() + self.dy[eps](z_i).flatten()*e + 0.5*quadratic*(self.d2y[eps,eps](z_i).flatten()*e**2 + self.d2y[sigma](z_i).flatten()*sigma**2).flatten()
+            r = np.random.randn()
+            e = r*sigma
+            return np.hstack(( self.ss.get_y(z_i).flatten() + self.dy[eps](z_i).flatten()*e + self.dy[Eps](z_i).flatten()*E
+                                + self.dy[p](z_i).dot(phat).flatten()
+                                + 0.5*quadratic*(self.d2y[eps,eps](z_i).flatten()*e**2 + self.d2y[sigma](z_i).flatten()*sigma**2).flatten()
                                ,e))
             
         ye = np.vstack(parallel_map(compute_ye,self.Gamma))
         y,epsilon = ye[:,:-1],ye[:,-1]
         Gamma = y.dot(Izy.T)
-        Y = self.ss.get_Y() + 0.5*quadratic*self.d2Y[sigma].flatten()*sigma**2
+        Y = (self.ss.get_Y() + self.dY_Eps.flatten() * E + self.dY_p.dot(phat).flatten()
+                + 0.5*quadratic*self.d2Y[sigma].flatten()*sigma**2 )
         
         return Gamma,Y,epsilon,y
-        
-    def checkEuler(self,y_,Y_):
-        '''
-        Checks the Euler Equation error
-        '''
-        z_i = Izy.dot(y_)
-        Y = self.ss.get_Y() + 0.5*self.d2Y[sigma].flatten()*sigma**2
-        def f(x):
-            e = x * sigma
-            y = self.ss.get_y(z_i).flatten() + self.dy[eps](z_i).flatten()*e + 0.5*(self.d2y[eps,eps](z_i).flatten()*e**2 + self.d2y[sigma](z_i).flatten()*sigma**2).flatten()
-            return EulerError(y_,Y_,y,Y) * norm.pdf(x)
-        return quad(f,-6.,6.)[0]/quad(norm.pdf,-6.,6.)[0]
-        
         
         
         

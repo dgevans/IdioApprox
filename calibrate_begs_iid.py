@@ -9,7 +9,7 @@ import numpy as np
 beta = 0.95
 sigma = 2.
 gamma = 2.
-sigma_e = 0.1
+sigma_e = 0.2
 indx_y={'logm':0,'muhat':1,'e':2,'c' :3,'l':4,'rho1_':5,'rho2':6,'phi':7,'x_':8,'kappa_':9,'shocks':10}
 indx_Y={'alpha1':0,'alpha2':1,'taxes':2,'eta':3,'lambda':4}
 indx_Gamma={'m_':0,'mu_':1,'e_':2}

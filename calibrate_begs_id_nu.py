@@ -10,7 +10,7 @@ beta = 0.95
 sigma = 2.
 gamma = 2.
 sigma_e = 0.04
-sigma_E = 0.02
+sigma_E = 0.0
 
 
 n = 2 # number of measurability constraints

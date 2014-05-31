@@ -12,7 +12,6 @@ from utilities import hashable_array
 from utilities import quadratic_dot
 from utilities import dict_fun
 import itertools
-
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
@@ -28,7 +27,8 @@ def parallel_map(f,X):
     r = len(X)%s
     my_range = range(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
     my_data =  map(f,X[my_range])
-    data = comm.allgather(my_data)
+    data = comm.gather(my_data)
+    data = comm.bcast(data)
     return list(itertools.chain(*data))
     
 def parallel_sum(f,X):
@@ -40,8 +40,8 @@ def parallel_sum(f,X):
     r = len(X)%s
     my_range = range(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
     my_sum =  sum(itertools.imap(f,X[my_range]))
-    return sum( comm.allgather(my_sum) )
-    
+    sums = comm.gather(my_sum)
+    return sum( comm.bcast(sums) )
 def parallel_dict_map(F,l):
     '''
     perform a map preserving the dict structure
@@ -292,7 +292,7 @@ class approximate(object):
         d[z,eps] = Izy.dot(d[y,eps])
 
         return d
-        
+       
     def compute_HFhat(self):
         '''
         Constructs the HFhat functions

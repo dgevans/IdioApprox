@@ -28,7 +28,8 @@ def parallel_map(f,X):
     r = len(X)%s
     my_range = range(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
     my_data =  map(f,X[my_range])
-    data = comm.allgather(my_data)
+    data = comm.gather(my_data)
+    data = comm.bcast(data)
     return list(itertools.chain(*data))
     
 def parallel_sum(f,X):
@@ -40,7 +41,8 @@ def parallel_sum(f,X):
     r = len(X)%s
     my_range = range(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
     my_sum =  sum(itertools.imap(f,X[my_range]))
-    return sum( comm.allgather(my_sum) )
+    sums = comm.gather(my_sum)
+    return sum( comm.bcast(sums) )
     
 def parallel_dict_map(F,l):
     '''
@@ -351,7 +353,7 @@ class approximate(object):
         d[z,eps] = Izy.dot(d[y,eps])
 
         return d
-        
+     
     def compute_HFhat(self):
         '''
         Constructs the HFhat functions
@@ -369,7 +371,7 @@ class approximate(object):
                     for y1 in [y,e,Y,z,v,eps]:
                         HFy1 = HF[:,y1,:]
                         for y2 in [y,e,Y,z,v,eps]:
-                            if x1 == S and x2 == S:
+                            if x1.__hash__() == S.__hash__() and x2.__hash__() == S.__hash__():
                                 HFhat += quadratic_dot(HFy1[n:,:,y2],d[y1,x1],d[y2,x2])
                             else:
                                 HFhat += quadratic_dot(HFy1[:-n,:,y2],d[y1,x1],d[y2,x2])
@@ -535,11 +537,6 @@ class approximate(object):
         self.d2y[sigma] = dict_fun(lambda z_i: Ai(z_i) + Ci(z_i).dot(tempC).dot(Atild) +
                       ( Bi(z_i)+Ci(z_i).dot(tempC).dot(Btild) ).dot(self.d2Y[sigma]))
         
-    def get_approximation(self):
-        '''
-        Returns approximation object
-        '''
-        return approximation(self.dy,self.d2y,self.dY,self.d2Y,self.ss)
         
     def iterate(self,quadratic = True):
         '''
@@ -570,16 +567,3 @@ class approximate(object):
                 + 0.5*quadratic*self.d2Y[sigma].flatten()*sigma**2 )
         
         return Gamma,Y,epsilon,y
-        
-        
-        
-        
-class approximation(object):
-    '''
-    Holds all the relevant infomation of the approximate class
-    '''
-    def __init__(self,dy,d2y,dY,d2Y,ss):
-        '''
-        Stores these variables
-        '''
-        self.dy,self.d2y,self.dY,self.d2Y,self.ss = dy,d2y,dY,d2Y,ss

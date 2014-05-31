@@ -466,4 +466,36 @@ We solve the model and simulate the economy for 1000 agents for 400 periods. The
   \item Adding capital 
   \item GHH preferences
   \end{itemize}
+
+\section{Numerical Progress}
+Currently we have an approximation to the time 1 problem for the following setup:
+\begin{itemize}
+	\item Government expenditures iid of the form
+	\[
+		g_t = g\exp(\eta_t)
+	\]Though we are not restricted to government expenditure shocks, only to iid aggregate shocks for now.
+	\item  Persistant idiosyncratic shocks
+	\[
+		e^i_t=(1-\nu)\bar{e}+\nu e^i_{t-1}+q\epsilon^i_t
+	\]where $\nu \approx 1$.
+\end{itemize}  This is done right now by taking the first order perturbation with respect to both $\nu$ and $\eta_t$.  Higher order approximations are doable but will take more time.  Figure \ref{fig:near_unit_quant} plots the quantiles of consumption labor and output for a calibration with no aggregate shocks and $\nu = 0.995$.  In addition Figure \ref{fig:near_unit_tax} plots a path of the labor tax rate with and without aggregate shocks.  The addition of aggregate shocks adds variability to the tax rate on top of the time path for the no-shock case.
+\begin{figure}[htp]
+\centering
+	\includegraphics[width=0.8\textwidth]{near_unit_quant.eps}
+	\caption{Inequality in the unit root  economy. The figure plots the quantiles for consumption, pre-tax labor earnings, labor and the covariance between consumption and pre-tax labor earnings\label{fig:near_unit_quant}}
+\end{figure}
+\begin{figure}[htp]
+	\centering
+	\includegraphics[width=0.49\textwidth]{near_unit_agg.eps}
+	\includegraphics[width=0.49\textwidth]{near_unit_tax.eps}
+	\caption{Time path of the tax rate with (left) and without (right) government expenditure shocks.\label{fig:near_unit_tax}}
+\end{figure}
+\newpage
+\subsection{Calibration}
+In terms of calibrating to the current US economy we propose the following:
+\begin{enumerate}
+	\item  Start with a joint distribution of assets and productivity or consumption and productivity.
+	\item  Solve a complete markets problem with initial distribution of assets and productivities to match the distribution in the data.
+	\item  This gives a distribution of multipliers and effective pareto weights we can use to simulate the incomplete markets economy. (we can also easily back out the time zero distribution of assets and productivities that would induce this choice so as to check if it is close to our initial distribution).
+\end{enumerate}
 \end{document}

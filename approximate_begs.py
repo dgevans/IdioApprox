@@ -554,6 +554,7 @@ class approximate(object):
         
         def compute_ye(z_i):
             r = np.random.randn()
+            r = min(3.,max(-3.,r))
             e = r*sigma
             return np.hstack(( self.ss.get_y(z_i).flatten() + self.dy[eps](z_i).flatten()*e + self.dy[Eps](z_i).flatten()*E
                                 + self.dy[p](z_i).dot(phat).flatten()

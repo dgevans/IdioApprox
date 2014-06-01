@@ -13,6 +13,9 @@ sigma_e = 0.02
 sigma_E = 0.0
 
 
+ll = np.array([-4.,-4.,-5.])
+ul = np.array([4.,4.,5.])
+
 n = 2 # number of measurability constraints
 nG = 2 # number of aggregate measurability constraints.
 ny = 10 # number of individual controls (m_{t},mu_{t},c_{t},l_{t},rho1_,rho2,phi,x_{t-1},kappa_{t-1}) Note that the forward looking terms are at the end
@@ -164,6 +167,12 @@ def nomalize(Gamma):
     Normalizes the distriubtion of states if need be
     '''
     #in our case we want distribution of market weights to be one
+    for i in range(nz):
+        if(np.where(Gamma[:,i]<ll[i])[0]):
+            Gamma[np.where(Gamma[:,i]<ll[i])[0],i] = ll[i]
+        if(np.where(Gamma[:,i]>ul[i])[0]):
+            Gamma[np.where(Gamma[:,i]>ul[i])[0],i] = ul[i]
+            
     Gamma[:,0] -= np.mean(Gamma[:,0])
     Gamma[:,1] -= np.mean(Gamma[:,1]/np.exp(Gamma[:,0]))*np.exp(Gamma[:,0])
     return Gamma

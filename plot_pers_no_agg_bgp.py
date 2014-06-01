@@ -17,8 +17,8 @@ rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 rc('text', usetex=True)
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
-N=300
-T=100
+N=1000
+T=500
 Para.sigma_E=0.0
 Gamma,Y,Shocks,y = {},{},{},{}
 

@@ -9,7 +9,7 @@ import numpy as np
 beta = 0.95
 gamma = 2.
 psi=0.5
-sigma_e = 0.04
+sigma_e = 0.02
 sigma_E = 0.0
 
 
@@ -22,7 +22,7 @@ nz = 3 # Number of individual states (m_{t-1},mu_{t-1})
 nv = 2 # number of forward looking terms (x_t,rho1_t)
 n_p = 1 #number of parameters
 
-phat = np.array([-0.03])
+phat = np.array([-0.01])
 
 indx_y={'logm':0,'muhat':1,'e':2,'c' :3,'l':4,'rho1_':5,'rho2':6,'phi':7,'x_':8,'kappa_':9,'shocks':10}
 indx_Y={'alpha1':0,'alpha2':1,'taxes':2,'eta':3,'lambda':4}
@@ -33,10 +33,10 @@ def F(w):
     '''
     Individual first order conditions
     '''
-    logm,muhat,e,c,l,rho1_,rho2,phi,x_,kappa_ = w[:ny] #y
+    logm,mu,e,c,l,rho1_,rho2,phi,x_,kappa_ = w[:ny] #y
     EUc,EUc_mu,Ex_,Erho1_ = w[ny:ny+ne] #e
     alpha1,alpha2,tau,eta,lamb,T = w[ny+ne:ny+ne+nY] #Y
-    logm_,muhat_,e_= w[ny+ne+nY:ny+ne+nY+nz] #z
+    logm_,mu_,e_= w[ny+ne+nY:ny+ne+nY+nz] #z
     x,kappa = w[ny+ne+nY+nz:ny+ne+nY+nz+nv] #v
     nu = w[ny+ne+nY+nz+nv+n_p-1] #v
     eps = w[ny+ne+nY+nz+nv+n_p] #shock
@@ -44,8 +44,8 @@ def F(w):
     
     m_,m = np.exp(logm_),np.exp(logm)
 
-    mu_ = muhat_ * m_
-    mu = muhat * m    
+    #mu_ = muhat_ * m_
+    #mu = muhat * m    
     
     Uc = psi/c
     Ucc = -psi/(c**2)
@@ -74,7 +74,7 @@ def G(w):
     '''
     Aggregate equations
     '''
-    logm,muhat,e,c,l,rho1_,rho2,phi,x_,kappa_ = w[:ny] #y
+    logm,mu,e,c,l,rho1_,rho2,phi,x_,kappa_ = w[:ny] #y
     alpha1,alpha2,tau,eta,lamb,T = w[ny+ne:ny+ne+nY] #Y
     Eps = w[ny+ne+nY+nz+nv+n_p+1]
  
@@ -83,7 +83,7 @@ def G(w):
     
     ret = np.empty(nY+nG,dtype=w.dtype)
     ret[0] = alpha1 #alpha_1 can't depend on Eps
-    ret[1] = muhat # muhat must integrate to zero for all Eps
+    ret[1] = mu/m # muhat must integrate to zero for all Eps
     
     ret[2] = 1 - m #normalizing for Em=1
     ret[3] = c + 0.17*np.exp(Eps) - np.exp(e) * l # resources
@@ -99,10 +99,10 @@ def f(y):
     '''
     Expectational equations that define e=Ef(y)
     '''
-    logm,muhat,e,c,l,rho1_,rho2,phi,x_,kappa_ = y
+    logm,mu,e,c,l,rho1_,rho2,phi,x_,kappa_ = y
     
-    m = np.exp(logm)
-    mu = muhat * m
+    #m = np.exp(logm)
+    #mu = muhat * m
     
     Uc = psi/c
     
@@ -118,11 +118,11 @@ def Finv(YSS,z):
     '''
     Given steady state YSS solves for y_i
     '''
-    logm,muhat,e = z
+    logm,mu,e = z
     alpha1,alpha2,tau,eta,lamb,T = YSS
     
     m = np.exp(logm)
-    mu = muhat * m
+    #mu = muhat * m
     
     Uc =alpha1/m
     c = psi/Uc
@@ -142,14 +142,14 @@ def Finv(YSS,z):
     kappa = rho1*Uc
     
     return np.vstack((
-    logm,muhat,e,c,l,rho1,rho2,phi,x,kappa   
+    logm,mu,e,c,l,rho1,rho2,phi,x,kappa   
     ))
     
 def GSS(YSS,y_i):
     '''
     Aggregate conditions for the steady state
     '''
-    logm,muhat,e,c,l,rho1,rho2,phi,x,kappa = y_i
+    logm,mu,e,c,l,rho1,rho2,phi,x,kappa = y_i
     alpha1,alpha2,tau,eta,lamb,T = YSS
   
     
@@ -164,11 +164,8 @@ def nomalize(Gamma):
     Normalizes the distriubtion of states if need be
     '''
     #in our case we want distribution of market weights to be one
-    trunc = np.where(Gamma[:,0]<-3.5)[0]
-    if len(trunc)>0:
-        Gamma[trunc] = np.zeros((len(trunc),3))
     Gamma[:,0] -= np.mean(Gamma[:,0])
-    Gamma[:,1] -= np.mean(Gamma[:,1])
+    Gamma[:,1] -= np.mean(Gamma[:,1]/np.exp(Gamma[:,0]))*np.exp(Gamma[:,0])
     return Gamma
     
     

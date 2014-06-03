@@ -68,20 +68,23 @@ nY = None
 nz = None
 nv = None
 n_p = None
+neps = None
 Ivy = None
 Izy = None
 Para = None
+
+shock = 0.
 
 y,e,Y,z,v,eps,Eps,p,S,sigma,sigma_E = [None]*11
 #interpolate = utilities.interpolator_factory([3])
 
 def calibrate(Parahat):
-    global F,G,f,ny,ne,nY,nz,nv,n,Ivy,Izy,nG,n_p
+    global F,G,f,ny,ne,nY,nz,nv,n,Ivy,Izy,nG,n_p,neps
     global y,e,Y,z,v,eps,p,S,sigma,Eps,sigma_E,Para
     Para = Parahat
     #global interpolate
     F,G,f = Para.F,Para.G,Para.f
-    ny,ne,nY,nz,nv,n,nG,n_p = Para.ny,Para.ne,Para.nY,Para.nz,Para.nv,Para.n,Para.nG,Para.n_p
+    ny,ne,nY,nz,nv,n,nG,n_p,neps = Para.ny,Para.ne,Para.nY,Para.nz,Para.nv,Para.n,Para.nG,Para.n_p,Para.neps
     Ivy,Izy = np.zeros((nv,ny)),np.zeros((nz,ny)) # Ivy given a vector of y_{t+1} -> v_t and Izy picks out the state
     Ivy[:,-nv:] = np.eye(nv)
     Izy[:,:nz] = np.eye(nz)
@@ -94,12 +97,12 @@ def calibrate(Parahat):
     z = np.arange(ny+ne+nY,ny+ne+nY+nz).view(hashable_array)
     v = np.arange(ny+ne+nY+nz,ny+ne+nY+nz+nv).view(hashable_array)
     p = np.arange(ny+ne+nY+nz+nv,ny+ne+nY+nz+nv+n_p).view(hashable_array)
-    eps = np.arange(ny+ne+nY+nz+nv+n_p,ny+ne+nY+nz+nv+n_p+1).view(hashable_array)
-    Eps = np.arange(ny+ne+nY+nz+nv+n_p+1,ny+ne+nY+nz+nv+n_p+2).view(hashable_array)
+    eps = np.arange(ny+ne+nY+nz+nv+n_p,ny+ne+nY+nz+nv+n_p+neps).view(hashable_array)
+    Eps = np.arange(ny+ne+nY+nz+nv+n_p+neps,ny+ne+nY+nz+nv+n_p+neps+1).view(hashable_array)
     
     S = np.hstack((z,Y)).view(hashable_array)
     
-    sigma = Para.sigma_e
+    sigma = Para.sigma_e.view(hashable_array)
     
     sigma_E = Para.sigma_E
     
@@ -149,7 +152,7 @@ class approximate(object):
         ebar = f(ybar)
         
         return np.hstack((
-        ybar,ebar,Ybar,ybar[:nz],Ivy.dot(ybar),1.,0.,0.
+        ybar,ebar,Ybar,ybar[:nz],Ivy.dot(ybar),1.,np.zeros(neps),0.
         ))
         
     def compute_dy(self):
@@ -340,17 +343,16 @@ class approximate(object):
     
         d[e,S],d[e,eps] = df.dot(d[y,S]), np.zeros((ne,1)) # first order effect of S on e
     
-        d[Y,S],d[Y,eps] = np.hstack(( np.zeros((nY,nz)), np.eye(nY) )),np.zeros((nY,1))
+        d[Y,S],d[Y,eps] = np.hstack(( np.zeros((nY,nz)), np.eye(nY) )),np.zeros((nY,neps))
         
-        d[z,S],d[z,eps] = np.hstack(( np.eye(nz), np.zeros((nz,nY)) )),np.zeros((nz,1))
+        d[z,S],d[z,eps] = np.hstack(( np.eye(nz), np.zeros((nz,nY)) )),np.zeros((nz,neps))
         
         d[v,S],d[v,eps] = Ivy.dot(d[y,S]), Ivy.dot(dy[z](z_i)).dot(Izy).dot(dy[eps](z_i))
         
-        d[eps,S],d[eps,eps] = np.zeros((1,nz+nY)),np.eye(1)       
+        d[eps,S],d[eps,eps] = np.zeros((neps,nz+nY)),np.eye(neps)       
 
         d[y,z] = d[y,S][:,:nz]
         
-        d[z,eps] = Izy.dot(d[y,eps])
 
         return d
      
@@ -404,8 +406,9 @@ class approximate(object):
             DF = self.DF(z_i)
             d = self.get_d(z_i)
             DFi = DF[:-n]
+            dz_eps= Izy.dot(d[y,eps])
             return np.tensordot(np.linalg.inv(DFi[:,y] + DFi[:,v].dot(Ivy).dot(d[y,z]).dot(Izy)),
-            -self.HFhat[S,eps](z_i) - np.tensordot(DFi[:,v].dot(Ivy), self.d2y[S,S](z_i)[:,:,:nz].dot(d[z,eps]),1)
+            -self.HFhat[S,eps](z_i) - np.tensordot(DFi[:,v].dot(Ivy), self.d2y[S,S](z_i)[:,:,:nz].dot(dz_eps),1)
             , axes=1)
             
         self.d2y[S,eps] = dict_fun(d2y_Seps)
@@ -415,9 +418,10 @@ class approximate(object):
             DF = self.DF(z_i)
             d = self.get_d(z_i)
             DFi = DF[:-n]
+            dz_eps= Izy.dot(d[y,eps])
             return np.tensordot(np.linalg.inv(DFi[:,y] + DFi[:,v].dot(Ivy).dot(d[y,z]).dot(Izy)),
             -self.HFhat[eps,eps](z_i) - np.tensordot(DFi[:,v].dot(Ivy), 
-            quadratic_dot(self.d2y[S,S](z_i)[:,:nz,:nz],d[z,eps],d[z,eps]),1)
+            quadratic_dot(self.d2y[S,S](z_i)[:,:nz,:nz],dz_eps,dz_eps),1)
             ,axes=1)
             
         self.d2y[eps,eps] = dict_fun(d2y_epseps)
@@ -486,13 +490,13 @@ class approximate(object):
         
         temp = np.linalg.inv(DFi[:,y]+DFi[:,e].dot(df)+DFi[:,v].dot(Ivy+Ivy.dot(d[y,z]).dot(Izy)))
         
-        Ahat = (-DFi[:,e].dot(df).dot(self.d2y[eps,eps](z_i).flatten()) 
-        -DFi[:,e].dot(quadratic_dot(Hf,d[y,eps],d[y,eps]).flatten()) 
+        Ahat = (-DFi[:,e].dot(df).dot(self.d2y[eps,eps](z_i).diagonal(0,1,2)) 
+        -DFi[:,e].dot(quadratic_dot(Hf,d[y,eps],d[y,eps]).diagonal(0,1,2)) 
         -DFi[:,v].dot(Ivy).dot(d[y,Y]).dot(self.integral_term) )
         
         Bhat = -DFi[:,Y]
         Chat = -DFi[:,v].dot(Ivy).dot(d[y,Y])
-        return temp.dot(np.hstack((Ahat.reshape(-1,1),Bhat,Chat)))
+        return temp.dot(np.hstack((Ahat.reshape(-1,neps),Bhat,Chat)))
         
     def compute_DGhat_sigma(self,z_i):
         '''
@@ -502,13 +506,13 @@ class approximate(object):
         d = self.get_d(z_i)
         d2y = self.d2y
         
-        DGhat = np.zeros(nY)
-        DGhat += DG[:,y].dot(d2y[eps,eps](z_i).flatten())
-        d[eps,eps] =np.array([[1]])
+        DGhat = np.zeros((nY,neps))
+        DGhat += DG[:,y].dot(d2y[eps,eps](z_i).diagonal(0,1,2))
+        d[eps,eps] =np.eye(neps)
         for x1 in [y,eps]:
             HGx1 = HG[:,x1,:]
             for x2 in [y,eps]:
-                DGhat += quadratic_dot(HGx1[:,:,x2],d[x1,eps],d[x2,eps]).flatten()
+                DGhat += quadratic_dot(HGx1[:,:,x2],d[x1,eps],d[x2,eps]).diagonal(0,1,2)
         return DGhat
         
     def compute_dsigma(self):
@@ -518,11 +522,11 @@ class approximate(object):
         DG = lambda z_i : self.DG(z_i)[nG:,:]
         #Now how do things depend with sigma
         self.integral_term =self.integrate(lambda z_i:
-            quadratic_dot(self.d2Y[z,z](z_i),Izy.dot(self.dy[eps](z_i)),Izy.dot(self.dy[eps](z_i))).flatten()
-            + self.dY(z_i).dot(Izy).dot(self.d2y[eps,eps](z_i).flatten()))
+            quadratic_dot(self.d2Y[z,z](z_i),Izy.dot(self.dy[eps](z_i)),Izy.dot(self.dy[eps](z_i))).diagonal(0,1,2)
+            + self.dY(z_i).dot(Izy).dot(self.d2y[eps,eps](z_i).diagonal(0,1,2)))
             
         ABCi = dict_fun(self.compute_d2y_sigma )
-        Ai,Bi,Ci = lambda z_i : ABCi(z_i)[:,0], lambda z_i : ABCi(z_i)[:,1:nY+1], lambda z_i : ABCi(z_i)[:,nY+1:]
+        Ai,Bi,Ci = lambda z_i : ABCi(z_i)[:,:neps], lambda z_i : ABCi(z_i)[:,neps:nY+neps], lambda z_i : ABCi(z_i)[:,nY+neps:]
         Atild = self.integrate(lambda z_i: self.dY(z_i).dot(Izy).dot(Ai(z_i)))
         Btild = self.integrate(lambda z_i: self.dY(z_i).dot(Izy).dot(Bi(z_i)))
         Ctild = self.integrate(lambda z_i: self.dY(z_i).dot(Izy).dot(Ci(z_i)))
@@ -553,18 +557,19 @@ class approximate(object):
         phat = Para.phat
         
         def compute_ye(z_i):
-            r = np.random.randn()
-            r = min(3.,max(-3.,r))
+            r = np.random.randn(neps)
+            for i in range(neps):
+                r[i] = min(3.,max(-3.,r[i]))
             e = r*sigma
-            return np.hstack(( self.ss.get_y(z_i).flatten() + self.dy[eps](z_i).flatten()*e + self.dy[Eps](z_i).flatten()*E
+            return np.hstack(( self.ss.get_y(z_i).flatten() + self.dy[eps](z_i).dot(e).flatten() + self.dy[Eps](z_i).flatten()*E
                                 + self.dy[p](z_i).dot(phat).flatten()
-                                + 0.5*quadratic*(self.d2y[eps,eps](z_i).flatten()*e**2 + self.d2y[sigma](z_i).flatten()*sigma**2).flatten()
+                                + 0.5*quadratic*(quadratic_dot(self.d2y[eps,eps](z_i),e,e).flatten() + self.d2y[sigma](z_i).dot(sigma**2).flatten()).flatten()
                                ,e))
             
         ye = np.vstack(parallel_map(compute_ye,self.Gamma))
-        y,epsilon = ye[:,:-1],ye[:,-1]
+        y,epsilon = ye[:,:-neps],ye[:,-neps]
         Gamma = y.dot(Izy.T)
         Y = (self.ss.get_Y() + self.dY_Eps.flatten() * E + self.dY_p.dot(phat).flatten()
-                + 0.5*quadratic*self.d2Y[sigma].flatten()*sigma**2 )
+                + 0.5*quadratic*self.d2Y[sigma].dot(sigma**2).flatten() )
         
         return Gamma,Y,epsilon,y

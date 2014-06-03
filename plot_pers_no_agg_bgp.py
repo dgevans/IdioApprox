@@ -10,16 +10,15 @@ import calibrate_begs_id_nu_bgp as Para
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib import rc
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+#from matplotlib import rc
+#rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 ## for Palatino and other serif fonts use:
 #rc('font',**{'family':'serif','serif':['Palatino']})
-rc('text', usetex=True)
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
-N=1000
-T=500
-Para.sigma_E=0.0
+#rc('text', usetex=True)
+#plt.rc('text', usetex=True)
+#plt.rc('font', family='serif')
+N=500
+T=100
 Gamma,Y,Shocks,y = {},{},{},{}
 
 Gamma[0] = np.zeros((N,3)) #initialize 100 agents at m = 1 for testing purposes
@@ -28,7 +27,6 @@ Gamma[0][:,0] = np.zeros(N)
 
 v = simulate.v
 v.execute('import calibrate_begs_id_nu_bgp as Para')
-v.execute('Para.sigma_E=0.0')
 v.execute('import approximate_begs as approximate')
 v.execute('approximate.calibrate(Para)')
 simulate.simulate(Para,Gamma,Y,Shocks,y,T)

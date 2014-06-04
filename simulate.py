@@ -33,7 +33,7 @@ def update_state_parallel(Para,Gamma,quadratic = True):
     v.execute('approx = approximate.approximate(Gamma)')
     approx = Reference('approx')
     diff = 1.
-    while diff > 0.01:
+    while diff > 0.005:
         Gamma_new_t,Y_t,Shocks_t,y_t = v.apply(lambda approx,quadratic = quadratic: approx.iterate(quadratic),approx)[0]
         error = np.linalg.norm(np.mean(Gamma_new_t[:,:2],0))
         if error < diff:

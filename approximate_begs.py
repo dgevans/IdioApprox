@@ -547,7 +547,10 @@ class approximate(object):
         Iterates the distribution by randomly sampling
         '''
         if rank == 0:
-            r = np.random.randn()
+            if shock == None:
+                r = np.random.randn()
+            else:
+                r = shock
             r = min(3.,max(-3.,r))
             E = r*sigma_E
         else:

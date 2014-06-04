@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 #rc('text', usetex=True)
 #plt.rc('text', usetex=True)
 #plt.rc('font', family='serif')
-N=500
-T=100
+N=200
+T=200
 Gamma,Y,Shocks,y = {},{},{},{}
 
 Gamma[0] = np.zeros((N,3)) #initialize 100 agents at m = 1 for testing purposes
@@ -30,6 +30,24 @@ v.execute('import calibrate_begs_id_nu_bgp as Para')
 v.execute('import approximate_begs as approximate')
 v.execute('approximate.calibrate(Para)')
 simulate.simulate(Para,Gamma,Y,Shocks,y,T)
+
+
+Gamma0 = Gamma[T-1]
+v.execute('approximate.shock = 1.')
+Gamma,Y,Shocks,y = {},{},{},{}
+Gamma[0] = Gamma0
+simulate.simulate(Para,Gamma,Y,Shocks,y,100)
+YH = np.vstack(Y.values())
+v.execute('approximate.shock = 0.')
+Gamma,Y,Shocks,y = {},{},{},{}
+Gamma[0] = Gamma0
+simulate.simulate(Para,Gamma,Y,Shocks,y,100)
+Y0 = np.vstack(Y.values())
+v.execute('approximate.shock = -1.')
+Gamma,Y,Shocks,y = {},{},{},{}
+Gamma[0] = Gamma0
+simulate.simulate(Para,Gamma,Y,Shocks,y,100)
+YL = np.vstack(Y.values())
 
 indx_y,indx_Y,indx_Gamma=Para.indx_y,Para.indx_Y,Para.indx_Gamma
 

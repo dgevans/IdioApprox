@@ -6,26 +6,13 @@ Created on Wed Apr  2 17:26:22 2014
 """
 
 import numpy as np
-from SparseGrid import interpolator as sg_interpolator
-from Spline import Spline
-from scipy.interpolate import UnivariateSpline
 import pycppad as ad
+from mpi4py import MPI
+import itertools
 
-def hstack(tup):
-    '''
-    hstack for interpolate wrapper
-    '''
-    N = tup[0].N
-    tup_f = map(lambda t: t.F, tup)
-    return interpolate_wrapper(np.hstack(tup_f),N)
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
 
-def vstack(tup):
-    '''
-    hstack for interpolate wrapper
-    '''
-    N = tup[0].N
-    tup_f = map(lambda t: t.F, tup)
-    return interpolate_wrapper(np.vstack(tup_f),N)
 
 def dict_map(F,l):
     '''
@@ -38,189 +25,6 @@ def dict_map(F,l):
         ret[key] = [t[key] for t in temp]
     return ret
     
-class interpolate_wrapper(object):
-    '''
-    Wrapper to interpolate vector function
-    '''
-    def __init__(self,F,N):
-        '''
-        Inits with array of interpolated functions
-        '''
-        self.F = F
-        self.N = N
-    def __getitem__(self,index):
-        '''
-        Uses square brakets operator
-        '''
-        return interpolate_wrapper(self.F[index],self.N)
-    def reshape(self,*args):
-        '''
-        Reshapes F
-        '''
-        newF = self.F.reshape(*args)
-        return interpolate_wrapper(newF,self.N)
-        
-    def transpose(self,*axes):
-        '''
-        Creates transpolse
-        '''
-        newF = self.F.transpose(*axes)
-        return interpolate_wrapper(newF,self.N)
-    
-    def __len__(self):
-        '''
-        return length
-        '''
-        return len(self.F)
-    def __call__(self,X):
-        '''
-        Evaluates F at X for each element of F, keeping track of the shape of F
-        '''
-        X = np.atleast_1d(X)
-        if self.N == 1:
-            if len(X) == 1:
-                fhat = np.vectorize(lambda f: float(f(X)),otypes=[np.ndarray])
-            else:
-                fhat = np.vectorize(lambda f: f(X).flatten(),otypes=[np.ndarray])
-            return np.array(fhat(self.F).tolist())
-        else:
-            if X.ndim == 1 or len(X) == 1:
-                fhat = np.vectorize(lambda f: float(f(X)),otypes=[np.ndarray])
-            else:
-                fhat = np.vectorize(lambda f: f(X).flatten(),otypes=[np.ndarray])
-            return np.array(fhat(self.F).tolist())
-            
-class interpolator(object):
-    '''
-    A new interpolator class which removes a lot of the 1 dimensional accuracy
-    '''
-    def __init__(self,d,mu,Gamma):
-        '''
-        Initiates the interpolator class
-        '''
-        #check if there is any variation
-        self.f = None
-        if np.var(Gamma,0)[0] >0 or d == 1:
-            self.f = {}
-            Gammahat = Gamma.copy()
-            for i in range(1,d):
-                self.f[i] = UnivariateSpline(Gamma[:,0],Gamma[:,i])
-                Gammahat[:,i] -= self.f[i](Gamma[:,0])
-            Mu = np.zeros(d)
-            Sigma = np.zeros((d,d))
-            for i in range(d):
-                xmin,xmax = min(Gammahat[:,i]),max(Gammahat[:,i])
-                Mu[i] = (xmin+xmax)/2
-                Sigma[i,i] = (xmax-xmin)/2
-            self.interp = sg_interpolator(d,mu,Mu,Sigma)
-            self.d = d
-        else:
-            Mu = np.zeros(d)
-            Sigma = np.zeros((d,d))
-            for i in range(d):
-                xmin,xmax = min(Gamma[:,i])-0.001,max(Gamma[:,i])+0.001
-                Mu[i] = (xmin+xmax)/2
-                Sigma[i,i] = (xmax-xmin)/2
-            self.interp = sg_interpolator(d,mu,Mu,Sigma)
-            
-    def getX(self):
-        '''
-        Gets the domain where the function needs to be evaluated
-        '''
-        if self.f == None:
-            return self.interp.getX()
-        else:
-            X = self.interp.getX()
-            for i in range(1,self.d):
-                X[:,i] += self.f[i](X[:,0])
-            return X
-            
-    def fit(self,Fs):
-        '''
-        Fits the vector of data X
-        '''
-        if self.f == None:
-            return self.interp.fit(Fs)
-        else:
-            return IFunction(self.f,self.interp.fit(Fs),self.d)
-            
-class IFunction(object):
-    '''
-    Defines a function given the new domain
-    '''
-    def __init__(self,f,F,d):
-        '''
-        Initializes
-        '''
-        self.f = f
-        self.F = F
-        self.d = d
-    def __call__(self,X):
-        '''
-        Evaluates the function
-        '''
-        X = np.atleast_2d(X.copy())
-        for i in range(1,self.d):
-            X[:,i] -= self.f[i](X[:,0])
-        return self.F(X)
-            
-class interpolator_factory(object):
-    '''
-    Generates an interpolator factory which will interpolate vector functions
-    '''
-    def __init__(self,d,mu,Gamma):
-        '''
-        Inits with types, orders and k
-        '''
-        self.interpolate = interpolator(d,mu,Gamma)
-        self.X = self.interpolate.getX()
-        
-    def __call__(self,Fs):
-        '''
-        Interpolates function given function values Fs at domain X
-        '''
-        Fshape = Fs[0].shape
-        Fflat = np.vstack(map(lambda F:F.flatten(),Fs))
-        F = []
-        for F_i in Fflat.T:
-            F.append(self.interpolate.fit(F_i))
-        return interpolate_wrapper(np.array(F),self.X.shape[1]).reshape(Fshape)
-
-class interpolator_factory_spline(object):
-    '''
-    Generates an interpolator factory which will interpolate vector functions
-    '''
-    def __init__(self,k):
-        '''
-        Inits with types, orders and k
-        '''
-        self.k = k
-        
-    def __call__(self,X,Fs):
-        '''
-        Interpolates function given function values Fs at domain X
-        '''
-        Fshape = Fs[0].shape
-        Fflat = np.vstack(map(lambda F:F.flatten(),Fs))
-        F = []
-        for F_i in Fflat.T:
-            F.append(Spline(X,F_i,self.k))
-        if X.ndim == 1:
-            return interpolate_wrapper(np.array(F),1).reshape(Fshape)
-        else:
-            return interpolate_wrapper(np.array(F),np.atleast_2d(X).shape[1]).reshape(Fshape)
-            
-def nd_Hessian(F,x0):
-    '''
-    Computes the hessian of F
-    '''
-    n = x0.shape[0]
-    m = np.asarray(F(x0)).shape[0]
-    HF = np.empty((m,n,n))
-    for i in range(m):
-        HF[i] = nd.Hessian(lambda x:F(x)[i])(x0)
-    
-    return HF
     
     
 def ad_Jacobian(F,x0):
@@ -303,4 +107,48 @@ class dict_fun(object):
             f = self.f(z)
             self.fm[hash_z] = f
             return f
+            
+    def join(self):
+        '''
+        Joins the dictionaries across multiple instances 
+        '''
+        my_data = self.fm.items()
+        data = comm.gather(my_data)
+        data = comm.bcast(data)
+        self.fm = dict(itertools.chain(*data))
 
+def parallel_map(f,X):
+    '''
+    A map function that applies f to each element of X
+    '''
+    s = comm.Get_size() #gets the number of processors
+    nX = len(X)/s
+    r = len(X)%s
+    my_range = range(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
+    my_data =  map(f,X[my_range])
+    data = comm.gather(my_data)
+    data = comm.bcast(data)
+    return list(itertools.chain(*data))
+    
+def parallel_sum(f,X):
+    '''
+    In parallel applies f to each element of X and computes the sum
+    '''
+    s = comm.Get_size() #gets the number of processors
+    nX = len(X)/s
+    r = len(X)%s
+    my_range = range(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
+    my_sum =  sum(itertools.imap(f,X[my_range]))
+    sums = comm.gather(my_sum)
+    return sum( comm.bcast(sums) )
+    
+def parallel_dict_map(F,l):
+    '''
+    perform a map preserving the dict structure
+    '''
+    ret = {}
+    temp = parallel_map(F,l)
+    keys = temp[0].keys()
+    for key in keys:
+        ret[key] = [t[key] for t in temp]
+    return ret

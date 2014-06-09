@@ -31,11 +31,13 @@ v.execute('import approximate_begs as approximate')
 v.execute('approximate.calibrate(Para)')
 v.execute('approximate.shock = 0.')
 simulate.simulate(Para,Gamma,Y,Shocks,y,150) #simulate 150 period with no aggregate shocks
-v.execute('approximate.shock = None')
-simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Turn on Aggregate shocks
 v.execute('import numpy as np')
 v.execute('state = np.random.get_state()') #save random state
-
+simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Turn on Aggregate shocks
+Y_ns = Y
+v.execute('approximate.shock = None')
+v.execute('np.random.set_state(state)')
+simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Turn on Aggregate shocks
 
 data = Gamma,Y,Shocks,y
 
@@ -48,13 +50,14 @@ Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,50)
 YH = np.vstack(Y.values())
-#simulate all low shocks
+#simulate all no shocks
 v.execute('approximate.shock = 0.')
 v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,50)
 Y0 = np.vstack(Y.values())
+#simulate all low shocks
 v.execute('approximate.shock = -1.')
 v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}

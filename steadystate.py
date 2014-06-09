@@ -17,11 +17,13 @@ nY = None
 nz = None
 nv = None
 
+Y0 = None
 
 def calibrate(Para):
-    global Finv,GSS,ny,ne,nY,nz,nv
+    global Finv,GSS,ny,ne,nY,nz,nv,Y0
     Finv,GSS = Para.Finv,Para.GSS
     ny,ne,nY,nz,nv = Para.ny,Para.ne,Para.nY,Para.nz,Para.nv
+    Y0 =0.5*np.ones(nY)
     
 class steadystate(object):
     '''
@@ -38,9 +40,13 @@ class steadystate(object):
         '''
         Solve for the steady state
         '''
+        global Y0
         res = root(self.SteadyStateRes,0.5*np.ones(nY))
         if not res.success:
+            res = root(self.SteadyStateRes,Y0)
+        if not res.success:
             raise Exception('Could not find steady state')
+        Y0 = res.x
         self.Y = res.x
         
     def SteadyStateRes(self,Y):

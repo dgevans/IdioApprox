@@ -8,8 +8,8 @@ import numpy as np
 
 beta = 0.95
 gamma = 2.
-psi=0.6994
-sigma_e = np.array([0.065,0.2])
+psi=0.5
+sigma_e = np.array([0.05,0.2])
 sigma_E = 0.025
 
 
@@ -70,7 +70,7 @@ def F(w):
              +rho2*m*Ucc - phi*w_e*(1-tau)*Ucc - lamb
     ret[8] = kappa_ - rho1_*EUcP
     ret[9] = e - nu*e_ - eps_p
-    ret[10] = w_e - np.exp(Eps+e+eps_t)
+    ret[10] = w_e - np.exp(e+eps_t)
     ret[11] = UcP - Uc*P
     
     ret[12] = mu_*EUcP - EUc_muP
@@ -84,7 +84,7 @@ def G(w):
     '''
     logm,muhat,e,c,l,rho1_,rho2,phi,w_e,UcP,x_,kappa_ = w[:ny] #y
     alpha1,alpha2,tau,eta,lamb,T = w[ny+ne:ny+ne+nY] #Y
-    Eps = w[ny+ne+nY+nz+nv+n_p+1]
+    Eps = w[ny+ne+nY+nz+nv+n_p+neps] #aggregate shock
  
     m = np.exp(logm)
     Uc = psi/c
@@ -94,7 +94,7 @@ def G(w):
     ret[1] = muhat # muhat must integrate to zero for all Eps
     
     ret[2] = 0 - logm #normalizing for Em=1
-    ret[3] = c + 0.17 - w_e * l # resources
+    ret[3] = c + 0.17*np.exp(Eps) - w_e * l # resources
     ret[4] = phi*Uc*w_e
     ret[5] = rho2    
     

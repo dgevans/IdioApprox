@@ -73,7 +73,10 @@ Ivy = None
 Izy = None
 Para = None
 
-shock = 0.
+shock = None
+
+logm_min = -3.
+muhat_min = -40.
 
 y,e,Y,z,v,eps,Eps,p,S,sigma,sigma_E = [None]*11
 #interpolate = utilities.interpolator_factory([3])
@@ -562,7 +565,10 @@ class approximate(object):
         def compute_ye(z_i):
             r = np.random.randn(neps)
             for i in range(neps):
-                r[i] = min(3.,max(-3.,r[i]))
+                if z_i[0] > logm_min and z_i[1] > muhat_min:
+                    r[i] = min(3.,max(-3.,r[i]))
+                else:
+                    r[i] = min(1.,max(logm_min-z_i[0]+0.1,(muhat_min-z_i[1])/10. +0.1))
             e = r*sigma
             return np.hstack(( self.ss.get_y(z_i).flatten() + self.dy[eps](z_i).dot(e).flatten() + self.dy[Eps](z_i).flatten()*E
                                 + self.dy[p](z_i).dot(phat).flatten()

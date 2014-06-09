@@ -6,7 +6,7 @@ Created on Sat Apr 19 19:49:53 2014
 """
 
 import simulate
-import calibrate_begs_id_nu_bgp as Para
+import calibrate_begs_id_nu_ces as Para
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 #rc('text', usetex=True)
 #plt.rc('text', usetex=True)
 #plt.rc('font', family='serif')
-N=200
-T=200
+N=1500
+T=400
 Gamma,Y,Shocks,y = {},{},{},{}
 
 Gamma[0] = np.zeros((N,3)) #initialize 100 agents at m = 1 for testing purposes
@@ -26,29 +26,44 @@ Gamma[0][:,0] = np.zeros(N)
 
 
 v = simulate.v
-v.execute('import calibrate_begs_id_nu_bgp as Para')
+v.execute('import calibrate_begs_id_nu_ces as Para')
 v.execute('import approximate_begs as approximate')
 v.execute('approximate.calibrate(Para)')
-simulate.simulate(Para,Gamma,Y,Shocks,y,T)
+v.execute('approximate.shock = 0.')
+simulate.simulate(Para,Gamma,Y,Shocks,y,150) #simulate 150 period with no aggregate shocks
+v.execute('approximate.shock = None')
+simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Turn on Aggregate shocks
+v.execute('import numpy as np')
+v.execute('state = np.random.get_state()') #save random state
 
+
+data = Gamma,Y,Shocks,y
 
 Gamma0 = Gamma[T-1]
+
+#Simulate all high shocks
 v.execute('approximate.shock = 1.')
+v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
-simulate.simulate(Para,Gamma,Y,Shocks,y,100)
+simulate.simulate(Para,Gamma,Y,Shocks,y,50)
 YH = np.vstack(Y.values())
+#simulate all low shocks
 v.execute('approximate.shock = 0.')
+v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
-simulate.simulate(Para,Gamma,Y,Shocks,y,100)
+simulate.simulate(Para,Gamma,Y,Shocks,y,50)
 Y0 = np.vstack(Y.values())
 v.execute('approximate.shock = -1.')
+v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
-simulate.simulate(Para,Gamma,Y,Shocks,y,100)
+simulate.simulate(Para,Gamma,Y,Shocks,y,50)
 YL = np.vstack(Y.values())
 
+
+Gamm,Y,Shocks,y = data
 indx_y,indx_Y,indx_Gamma=Para.indx_y,Para.indx_Y,Para.indx_Gamma
 
 mu,output,g,assets,bar_g,simulation_data={},{},{},{},{},{}
@@ -73,7 +88,7 @@ for t in range(T-1):
     #simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
     simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
     simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
-    panel_data=pd.Panel(simulation_data,minor_axis=['y','mu','logm','muhat','e','c','l','rho1_','rho2','phi','x_','kappa_','shocks'])
+    panel_data=pd.Panel(simulation_data,minor_axis=['y','mu','logm','muhat','e','c','l','rho1_','rho2','phi','w_e','UcP','a','x_','kappa_','shocks'])
 
 #panel_data.to_pickle('simulation_data.dat')
 

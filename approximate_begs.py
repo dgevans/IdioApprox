@@ -12,6 +12,7 @@ from utilities import hashable_array
 from utilities import quadratic_dot
 from utilities import dict_fun
 import itertools
+from scipy.cluster.vq import kmeans2
 
 from mpi4py import MPI
 
@@ -26,7 +27,7 @@ def parallel_map(f,X):
     s = comm.Get_size() #gets the number of processors
     nX = len(X)/s
     r = len(X)%s
-    my_range = range(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
+    my_range = slice(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
     my_data =  map(f,X[my_range])
     data = comm.gather(my_data)
     data = comm.bcast(data)
@@ -39,7 +40,7 @@ def parallel_sum(f,X):
     s = comm.Get_size() #gets the number of processors
     nX = len(X)/s
     r = len(X)%s
-    my_range = range(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
+    my_range = slice(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
     my_sum =  sum(itertools.imap(f,X[my_range]))
     sums = comm.gather(my_sum)
     return sum( comm.bcast(sums) )
@@ -75,8 +76,8 @@ Para = None
 
 shock = None
 
-logm_min = -3.
-muhat_min = -40.
+logm_min = -6.
+muhat_min = -np.inf
 
 y,e,Y,z,v,eps,Eps,p,S,sigma,sigma_E = [None]*11
 #interpolate = utilities.interpolator_factory([3])
@@ -121,8 +122,8 @@ class approximate(object):
         Approximate the equilibrium policies given z_i
         '''
         self.Gamma = Gamma
-        self.ss = steadystate.steadystate(Gamma.T)
-        
+        self.approximate_Gamma()
+        self.ss = steadystate.steadystate(self.Gamma_ss.T)
 
         #precompute Jacobians and Hessians
         self.get_w = dict_fun(self.get_wf)
@@ -139,12 +140,63 @@ class approximate(object):
         #linearize
         self.linearize()
         self.quadratic()
+        self.join_function()
+        
+    def approximate_Gamma(self,k=400):
+        '''
+        Approximate the Gamma distribution
+        '''
+        if rank == 0:
+            cluster,labels = kmeans2(self.Gamma,k,minit='points')
+            cluster,labels = comm.bcast((cluster,labels))
+        else:
+            cluster,labels = comm.bcast(None)
+        weights = (labels-np.arange(k).reshape(-1,1) ==0).sum(1)/float(len(self.Gamma))
+        #Para.nomalize(cluster,weights)
+        self.Gamma_ss = cluster[labels,:]
+        mask = weights > 0
+        cluster = cluster[mask]
+        weights = weights[mask]
+        
+        
+        self.dist = zip(cluster,weights)        
+        
+        
+    def approximate_Gamma_old(self,crit = 0.4):
+        '''
+        Approximate the Gamma distribution
+        '''
+        Gamma = self.Gamma
+        points = []
+        mapped_points = []
+        test = map(lambda z: set(np.arange(len(Gamma))[np.linalg.norm(Gamma-z,np.inf,1)<crit]),Gamma)
+        while True:
+            i = np.argmax(map(len,test))
+            if len(test[i]) == 0:
+                break
+            points.append(i)
+            mapped_points.append(list(test[i]))
+            test = map(lambda t: t.difference(mapped_points[-1]),test)
+
+        points = np.hstack(points)
+        
+        self.Gamma_ss = np.empty(self.Gamma.shape)
+        for p,mp in itertools.izip(points,mapped_points):
+            self.Gamma_ss[mp,:] = self.Gamma[p]
+            
+        Gammabar = self.Gamma[points,:]
+        weights = np.hstack(map(len,mapped_points))/float(len(self.Gamma))
+        self.dist = zip(Gammabar,weights)
+
         
     def integrate(self,f):
         '''
         Integrates a function f over Gamma
         '''
-        return parallel_sum(f,self.Gamma)/len(self.Gamma)
+        def f_int(x):
+            z,w = x
+            return w*f(z)
+        return parallel_sum(f_int,self.dist)
     
     def get_wf(self,z_i):
         '''
@@ -415,7 +467,7 @@ class approximate(object):
             , axes=1)
             
         self.d2y[S,eps] = dict_fun(d2y_Seps)
-        self.d2y[eps,S] = lambda z_i : self.d2y[S,eps](z_i).transpose(0,2,1)
+        self.d2y[eps,S] = dict_fun(lambda z_i : self.d2y[S,eps](z_i).transpose(0,2,1))
         
         def d2y_epseps(z_i):
             DF = self.DF(z_i)
@@ -543,6 +595,26 @@ class approximate(object):
         self.d2Y[sigma] = np.linalg.solve(temp1,-DGhat-temp2)
         self.d2y[sigma] = dict_fun(lambda z_i: Ai(z_i) + Ci(z_i).dot(tempC).dot(Atild) +
                       ( Bi(z_i)+Ci(z_i).dot(tempC).dot(Btild) ).dot(self.d2Y[sigma]))
+                      
+    def join_function(self):
+        '''
+        Joins the data for the dict_maps across functions
+        '''
+        for f in self.dy.values():
+            if hasattr(f, 'join'):
+                parallel_map(lambda x: f(x[0]),self.dist)
+                f.join()
+        for f in self.d2y.values():
+            if hasattr(f,'join'):       
+                parallel_map(lambda x: f(x[0]),self.dist)
+                f.join()
+          
+        self.dY.join()
+        
+        for f in self.d2Y.values():
+            if hasattr(f,'join'):   
+                parallel_map(lambda x: f(x[0]),self.dist)
+                f.join()
         
         
     def iterate(self,quadratic = True):
@@ -550,9 +622,8 @@ class approximate(object):
         Iterates the distribution by randomly sampling
         '''
         if rank == 0:
-            if shock == None:
-                r = np.random.randn()
-            else:
+            r = np.random.randn()
+            if not shock == None:
                 r = shock
             r = min(3.,max(-3.,r))
             E = r*sigma_E
@@ -561,8 +632,21 @@ class approximate(object):
             
         E = comm.bcast(E)
         phat = Para.phat
+        Gamma_dist = zip(self.Gamma,self.Gamma_ss)
         
-        def compute_ye(z_i):
+        Y1hat = parallel_sum(lambda z : self.dY(z[1]).dot((z[0]-z[1]))
+                          ,Gamma_dist)/len(self.Gamma)
+        
+        def Y2_int(x):
+            z_i,zbar = x
+            zhat = z_i-zbar
+            return (quadratic_dot(self.d2Y[z,z](zbar),zhat,zhat) + 2* quadratic_dot(self.d2Y[z,Y](zbar),zhat,Y1hat)).flatten()
+        
+        Y2hat = parallel_sum(Y2_int,Gamma_dist)/len(self.Gamma)
+        
+        def compute_ye(x):
+            z_i,zbar = x
+            zhat = z_i-zbar
             r = np.random.randn(neps)
             for i in range(neps):
                 if z_i[0] > logm_min and z_i[1] > muhat_min:
@@ -570,15 +654,21 @@ class approximate(object):
                 else:
                     r[i] = min(1.,max(logm_min-z_i[0]+0.1,(muhat_min-z_i[1])/10. +0.1))
             e = r*sigma
-            return np.hstack(( self.ss.get_y(z_i).flatten() + self.dy[eps](z_i).dot(e).flatten() + self.dy[Eps](z_i).flatten()*E
-                                + self.dy[p](z_i).dot(phat).flatten()
-                                + 0.5*quadratic*(quadratic_dot(self.d2y[eps,eps](z_i),e,e).flatten() + self.d2y[sigma](z_i).dot(sigma**2).flatten()).flatten()
+            Shat = np.hstack([zhat,Y1hat])
+            return np.hstack(( self.ss.get_y(zbar).flatten() + self.dy[eps](zbar).dot(e).flatten() + self.dy[Eps](zbar).flatten()*E
+                                + self.dy[p](zbar).dot(phat).flatten()
+                                + self.dy[z](zbar).dot(zhat).flatten()
+                                + self.dy[Y](zbar).dot(Y1hat).flatten()
+                                + 0.5*quadratic*(quadratic_dot(self.d2y[eps,eps](zbar),e,e).flatten() + self.d2y[sigma](zbar).dot(sigma**2).flatten()
+                                +quadratic_dot(self.d2y[S,S](zbar),Shat,Shat) + 2*quadratic_dot(self.d2y[S,eps](zbar),Shat,e)
+                                +self.dy[Y](zbar).dot(Y2hat)                                
+                                ).flatten()
                                ,e))
             
-        ye = np.vstack(parallel_map(compute_ye,self.Gamma))
+        ye = np.vstack(parallel_map(compute_ye,Gamma_dist))
         y,epsilon = ye[:,:-neps],ye[:,-neps]
         Gamma = y.dot(Izy.T)
-        Y = (self.ss.get_Y() + self.dY_Eps.flatten() * E + self.dY_p.dot(phat).flatten()
-                + 0.5*quadratic*self.d2Y[sigma].dot(sigma**2).flatten() )
+        Ynew = (self.ss.get_Y() + Y1hat + self.dY_Eps.flatten() * E + self.dY_p.dot(phat).flatten()
+                + 0.5*quadratic*(self.d2Y[sigma].dot(sigma**2) + Y2hat).flatten() )
         
-        return Gamma,Y,epsilon,y
+        return Gamma,Ynew,epsilon,y

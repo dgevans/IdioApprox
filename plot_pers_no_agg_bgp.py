@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 #rc('text', usetex=True)
 #plt.rc('text', usetex=True)
 #plt.rc('font', family='serif')
-N=1500
-T=400
+N=20000
+T=300
 Gamma,Y,Shocks,y = {},{},{},{}
 
 Gamma[0] = np.zeros((N,3)) #initialize 100 agents at m = 1 for testing purposes
@@ -33,19 +33,20 @@ v.execute('approximate.shock = 0.')
 simulate.simulate(Para,Gamma,Y,Shocks,y,150) #simulate 150 period with no aggregate shocks
 v.execute('import numpy as np')
 v.execute('state = np.random.get_state()') #save random state
-simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Turn on Aggregate shocks
-Y_ns = Y
+simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Keep off Aggregate shocks
+Y_ns = np.vstack(Y.values())
+Gamma0 = Gamma[T-1]
 v.execute('approximate.shock = None')
 v.execute('np.random.set_state(state)')
 simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Turn on Aggregate shocks
-
+Y_s = np.vstack(Y.values())
 data = Gamma,Y,Shocks,y
 
-Gamma0 = Gamma[T-1]
+
 
 #Simulate all high shocks
 v.execute('approximate.shock = 1.')
-v.execute('np.random.set_state(state)')
+v.execute('state = np.random.get_state()')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,50)

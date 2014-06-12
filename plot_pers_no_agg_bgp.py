@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 #plt.rc('text', usetex=True)
 #plt.rc('font', family='serif')
 N=20000
-T=300
+T=400
 Gamma,Y,Shocks,y = {},{},{},{}
 
 Gamma[0] = np.zeros((N,3)) #initialize 100 agents at m = 1 for testing purposes
@@ -30,18 +30,26 @@ v.execute('import calibrate_begs_id_nu_ces as Para')
 v.execute('import approximate_begs as approximate')
 v.execute('approximate.calibrate(Para)')
 v.execute('approximate.shock = 0.')
-simulate.simulate(Para,Gamma,Y,Shocks,y,150) #simulate 150 period with no aggregate shocks
-v.execute('import numpy as np')
-v.execute('state = np.random.get_state()') #save random state
-simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Keep off Aggregate shocks
-Y_ns = np.vstack(Y.values())
-Gamma0 = Gamma[T-1]
-v.execute('approximate.shock = None')
-v.execute('np.random.set_state(state)')
-simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Turn on Aggregate shocks
-Y_s = np.vstack(Y.values())
+simulate.simulate(Para,Gamma,Y,Shocks,y,T,230) #simulate 150 period with no aggregate shocks
+v.execute('Para.sigma_e[:] = 0.')
+v.execute('Para.phat[:] = 0.')
+v.execute('approximate.logm_min = -100.')
 data = Gamma,Y,Shocks,y
+Gamma0 = Gamma[T-1]
 
+
+v.execute('import numpy as np')
+#v.execute('state = np.random.get_state()') #save random state
+#simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Keep off Aggregate shocks
+#Y_ns = np.vstack(Y.values())
+#Gamma0 = Gamma[T-1]
+#
+#v.execute('approximate.shock = None')
+#v.execute('np.random.set_state(state)')
+#simulate.simulate(Para,Gamma,Y,Shocks,y,T,299) #Turn on Aggregate shocks
+#Y_s = np.vstack(Y.values())
+#data = Gamma,Y,Shocks,y
+#Gamma0 = Gamma[T-1]
 
 
 #Simulate all high shocks

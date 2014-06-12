@@ -8,10 +8,10 @@ import numpy as np
 
 beta = 0.95
 gamma = 2.
-sigma = 1.
-sigma_e = np.array([0.12,0.2])
+sigma = 2.
+sigma_e = np.array([0.05,0.2])
 sigma_E = 0.03
-
+chi = 0.
 
 ll = np.array([-np.inf,-np.inf,-np.inf])
 ul = np.array([np.inf,np.inf,np.inf])
@@ -26,7 +26,7 @@ nv = 2 # number of forward looking terms (x_t,rho1_t)
 n_p = 1 #number of parameters
 neps = len(sigma_e)
 
-phat = np.array([-0.01])
+phat = np.array([-0.0])
 
 indx_y={'logm':0,'muhat':1,'e':2,'c' :3,'l':4,'rho1_':5,'rho2':6,'phi':7,'x_':8,'kappa_':9,'shocks':10}
 indx_Y={'alpha1':0,'alpha2':1,'taxes':2,'eta':3,'lambda':4}
@@ -51,7 +51,7 @@ def F(w):
     mu_ = muhat_ * m_
     mu = muhat * m    
     
-    P = 1. + 0.0*Eps #payoff shock
+    P = 1. + chi*Eps #payoff shock
     
     Uc = c**(-sigma)
     Ucc = -sigma*c**(-sigma-1)
@@ -67,7 +67,7 @@ def F(w):
     ret[4] = (1-tau)*w_e*Uc + Ul #wage
     ret[5] = Ul - mu*(Ull*l + Ul) - phi*Ull + lamb*w_e
     ret[6] = rho2 + kappa/Uc + eta/Uc
-    ret[7] = Uc + x_*Ucc*P/(beta*EUcP)*(mu-mu_) - mu*(Ucc*c + Uc) + rho1_*m_*Ucc/beta \
+    ret[7] = Uc + x_*Ucc*P/(beta*EUcP)*(mu-mu_) - mu*(Ucc*(c-T) + Uc) + rho1_*m_*Ucc/beta \
              +rho2*m*Ucc - phi*w_e*(1-tau)*Ucc - lamb
     ret[8] = kappa_ - rho1_*EUcP
     ret[9] = e - nu*e_ - eps_p

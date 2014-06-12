@@ -147,7 +147,7 @@ class approximate(object):
         self.join_function()
         timing[3] = time.clock()
         
-    def approximate_Gamma(self,k=400):
+    def approximate_Gamma(self,k=150):
         '''
         Approximate the Gamma distribution
         '''

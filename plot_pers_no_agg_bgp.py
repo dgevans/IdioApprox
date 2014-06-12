@@ -30,8 +30,10 @@ v.execute('import calibrate_begs_id_nu_ces as Para')
 v.execute('import approximate_begs as approximate')
 v.execute('approximate.calibrate(Para)')
 v.execute('approximate.shock = 0.')
-v.execute('approximate.logm_min = -100.')
 simulate.simulate(Para,Gamma,Y,Shocks,y,T) #simulate 150 period with no aggregate shocks
+v.execute('Para.sigma_e[:] = 0.')
+v.execute('Para.phat[:] = 0.')
+v.execute('approximate.logm_min = -100.')
 data = Gamma,Y,Shocks,y
 Gamma0 = Gamma[T-1]
 

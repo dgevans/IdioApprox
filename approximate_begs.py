@@ -142,7 +142,7 @@ class approximate(object):
         self.quadratic()
         self.join_function()
         
-    def approximate_Gamma(self,k=400):
+    def approximate_Gamma(self,k=150):
         '''
         Approximate the Gamma distribution
         '''

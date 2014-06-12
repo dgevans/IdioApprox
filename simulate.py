@@ -41,6 +41,8 @@ def update_state_parallel(Para,Gamma,quadratic = True):
             diff = error
             Gamma_new,Y,Shocks,y = Gamma_new_t,Y_t,Shocks_t,y_t
         n += 1
+    time = c[0]['approximate.timing'].copy()
+    print np.diff(time)/(time[-1]-time[0])
     return Para.nomalize(Gamma_new.copy()),Y.copy(),Shocks.copy(),y.copy()
 
 def update_state(Para,Gamma):

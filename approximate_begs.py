@@ -4,7 +4,6 @@ Created on Fri Apr 11 17:28:52 2014
 
 @author: dgevans
 """
-from copy import copy
 import steadystate
 import numpy as np
 import utilities
@@ -13,12 +12,14 @@ from utilities import quadratic_dot
 from utilities import dict_fun
 import itertools
 from scipy.cluster.vq import kmeans2
+import time
 
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
+timing = np.zeros(6) 
 
 def parallel_map(f,X):
     '''
@@ -121,8 +122,10 @@ class approximate(object):
         '''
         Approximate the equilibrium policies given z_i
         '''
+        timing[0] = time.clock()
         self.Gamma = Gamma
         self.approximate_Gamma()
+        timing[1] = time.clock()
         self.ss = steadystate.steadystate(self.Gamma_ss.T)
 
         #precompute Jacobians and Hessians
@@ -140,7 +143,9 @@ class approximate(object):
         #linearize
         self.linearize()
         self.quadratic()
+        timing[2] = time.clock()
         self.join_function()
+        timing[3] = time.clock()
         
     def approximate_Gamma(self,k=400):
         '''
@@ -621,6 +626,7 @@ class approximate(object):
         '''
         Iterates the distribution by randomly sampling
         '''
+        timing[4] = time.clock()
         if rank == 0:
             r = np.random.randn()
             if not shock == None:
@@ -670,5 +676,5 @@ class approximate(object):
         Gamma = y.dot(Izy.T)
         Ynew = (self.ss.get_Y() + Y1hat + self.dY_Eps.flatten() * E + self.dY_p.dot(phat).flatten()
                 + 0.5*quadratic*(self.d2Y[sigma].dot(sigma**2) + Y2hat).flatten() )
-        
+        timing[5] = time.clock()
         return Gamma,Ynew,epsilon,y

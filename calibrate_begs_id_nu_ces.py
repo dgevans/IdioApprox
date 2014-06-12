@@ -26,7 +26,7 @@ nv = 2 # number of forward looking terms (x_t,rho1_t)
 n_p = 1 #number of parameters
 neps = len(sigma_e)
 
-phat = np.array([-0.0])
+phat = np.array([-0.01])
 
 indx_y={'logm':0,'muhat':1,'e':2,'c' :3,'l':4,'rho1_':5,'rho2':6,'phi':7,'x_':8,'kappa_':9,'shocks':10}
 indx_Y={'alpha1':0,'alpha2':1,'taxes':2,'eta':3,'lambda':4}

@@ -31,8 +31,10 @@ def parallel_map(f,X):
     my_range = slice(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
     my_data =  map(f,X[my_range])
     data = comm.gather(my_data)
-    data = comm.bcast(data)
-    return list(itertools.chain(*data))
+    if rank == 0:
+        return list(itertools.chain(*data))
+    else:
+        return None
     
 def parallel_sum(f,X):
     '''
@@ -122,10 +124,8 @@ class approximate(object):
         '''
         Approximate the equilibrium policies given z_i
         '''
-        timing[0] = time.clock()
         self.Gamma = Gamma
         self.approximate_Gamma()
-        timing[1] = time.clock()
         self.ss = steadystate.steadystate(self.Gamma_ss.T)
 
         #precompute Jacobians and Hessians
@@ -143,9 +143,7 @@ class approximate(object):
         #linearize
         self.linearize()
         self.quadratic()
-        timing[2] = time.clock()
         self.join_function()
-        timing[3] = time.clock()
         
     def approximate_Gamma(self,k=150):
         '''
@@ -166,32 +164,6 @@ class approximate(object):
         
         self.dist = zip(cluster,weights)        
         
-        
-    def approximate_Gamma_old(self,crit = 0.4):
-        '''
-        Approximate the Gamma distribution
-        '''
-        Gamma = self.Gamma
-        points = []
-        mapped_points = []
-        test = map(lambda z: set(np.arange(len(Gamma))[np.linalg.norm(Gamma-z,np.inf,1)<crit]),Gamma)
-        while True:
-            i = np.argmax(map(len,test))
-            if len(test[i]) == 0:
-                break
-            points.append(i)
-            mapped_points.append(list(test[i]))
-            test = map(lambda t: t.difference(mapped_points[-1]),test)
-
-        points = np.hstack(points)
-        
-        self.Gamma_ss = np.empty(self.Gamma.shape)
-        for p,mp in itertools.izip(points,mapped_points):
-            self.Gamma_ss[mp,:] = self.Gamma[p]
-            
-        Gammabar = self.Gamma[points,:]
-        weights = np.hstack(map(len,mapped_points))/float(len(self.Gamma))
-        self.dist = zip(Gammabar,weights)
 
         
     def integrate(self,f):
@@ -626,7 +598,6 @@ class approximate(object):
         '''
         Iterates the distribution by randomly sampling
         '''
-        timing[4] = time.clock()
         if rank == 0:
             r = np.random.randn()
             if not shock == None:
@@ -642,14 +613,12 @@ class approximate(object):
         
         Y1hat = parallel_sum(lambda z : self.dY(z[1]).dot((z[0]-z[1]))
                           ,Gamma_dist)/len(self.Gamma)
-        
         def Y2_int(x):
             z_i,zbar = x
             zhat = z_i-zbar
             return (quadratic_dot(self.d2Y[z,z](zbar),zhat,zhat) + 2* quadratic_dot(self.d2Y[z,Y](zbar),zhat,Y1hat)).flatten()
         
         Y2hat = parallel_sum(Y2_int,Gamma_dist)/len(self.Gamma)
-        
         def compute_ye(x):
             z_i,zbar = x
             zhat = z_i-zbar
@@ -670,11 +639,13 @@ class approximate(object):
                                 +self.dy[Y](zbar).dot(Y2hat)                                
                                 ).flatten()
                                ,e))
-            
-        ye = np.vstack(parallel_map(compute_ye,Gamma_dist))
-        y,epsilon = ye[:,:-neps],ye[:,-neps]
-        Gamma = y.dot(Izy.T)
-        Ynew = (self.ss.get_Y() + Y1hat + self.dY_Eps.flatten() * E + self.dY_p.dot(phat).flatten()
-                + 0.5*quadratic*(self.d2Y[sigma].dot(sigma**2) + Y2hat).flatten() )
-        timing[5] = time.clock()
-        return Gamma,Ynew,epsilon,y
+        if rank == 0:    
+            ye = np.vstack(parallel_map(compute_ye,Gamma_dist))
+            y,epsilon = ye[:,:-neps],ye[:,-neps]
+            Gamma = y.dot(Izy.T)
+            Ynew = (self.ss.get_Y() + Y1hat + self.dY_Eps.flatten() * E + self.dY_p.dot(phat).flatten()
+                    + 0.5*quadratic*(self.d2Y[sigma].dot(sigma**2) + Y2hat).flatten() )
+            return Gamma,Ynew,epsilon,y
+        else:
+            parallel_map(compute_ye,Gamma_dist)
+            return None

@@ -5,80 +5,16 @@ Created on Sat Apr 19 19:49:53 2014
 @author: dgevans
 """
 
-import simulate
 import calibrate_begs_id_nu_ces as Para
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-#from matplotlib import rc
-#rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-## for Palatino and other serif fonts use:
-#rc('font',**{'family':'serif','serif':['Palatino']})
-#rc('text', usetex=True)
-#plt.rc('text', usetex=True)
-#plt.rc('font', family='serif')
-N=10
-T=10
-Gamma,Y,Shocks,y = {},{},{},{}
+import cPickle as pickle
 
-Gamma[0] = np.zeros((N,3)) #initialize 100 agents at m = 1 for testing purposes
-Gamma[0][:,0] = np.zeros(N)
-
-
-v = simulate.v
-
-v.execute('import numpy as np')
-v.execute('import calibrate_begs_id_nu_ces as Para')
-v.execute('import approximate_begs as approximate')
-v.execute('approximate.calibrate(Para)')
-v.execute('approximate.shock = 0.')
-simulate.simulate(Para,Gamma,Y,Shocks,y,T) #simulate 150 period with no aggregate shocks
-v.execute('Para.sigma_e[:] = 0.')
-v.execute('Para.phat[:] = 0.')
-v.execute('approximate.logm_min = -100.')
-data = Gamma,Y,Shocks,y
-Gamma0 = Gamma[T-1]
-
-
-#v.execute('state = np.random.get_state()') #save random state
-#simulate.simulate(Para,Gamma,Y,Shocks,y,T,149) #Keep off Aggregate shocks
-#Y_ns = np.vstack(Y.values())
-#Gamma0 = Gamma[T-1]
-#
-#v.execute('approximate.shock = None')
-#v.execute('np.random.set_state(state)')
-#simulate.simulate(Para,Gamma,Y,Shocks,y,T,299) #Turn on Aggregate shocks
-#Y_s = np.vstack(Y.values())
-#data = Gamma,Y,Shocks,y
-#Gamma0 = Gamma[T-1]
-
-
-#Simulate all high shocks
-v.execute('approximate.shock = 1.')
-v.execute('state = np.random.get_state()')
-Gamma,Y,Shocks,y = {},{},{},{}
-Gamma[0] = Gamma0
-simulate.simulate(Para,Gamma,Y,Shocks,y,50)
-YH = np.vstack(Y.values())
-#simulate all no shocks
-v.execute('approximate.shock = 0.')
-v.execute('np.random.set_state(state)')
-Gamma,Y,Shocks,y = {},{},{},{}
-Gamma[0] = Gamma0
-simulate.simulate(Para,Gamma,Y,Shocks,y,50)
-Y0 = np.vstack(Y.values())
-#simulate all low shocks
-v.execute('approximate.shock = -1.')
-v.execute('np.random.set_state(state)')
-Gamma,Y,Shocks,y = {},{},{},{}
-Gamma[0] = Gamma0
-simulate.simulate(Para,Gamma,Y,Shocks,y,50)
-YL = np.vstack(Y.values())
-
-
-Gamm,Y,Shocks,y = data
+data = pickle.load( open( "data_initialization.pickle", "rb" ) )
+Gamma,Y,Shocks,y=data
 indx_y,indx_Y,indx_Gamma=Para.indx_y,Para.indx_Y,Para.indx_Gamma
-
+T=len(Shocks)
 mu,output,g,assets,bar_g,simulation_data={},{},{},{},{},{}
 for t in range(T-1):
     if np.shape(y[t])[1]<10:

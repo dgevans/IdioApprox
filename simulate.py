@@ -23,6 +23,27 @@ def simulate(Para,Gamma,Y,Shocks,y,T,T0=0,quadratic = True):
         Gamma[t],Y[t-1], Shocks[t-1],y[t-1]= update_state_parallel(Para,Gamma[t-1],quadratic)
         t += 1
     return Gamma,Y,Shocks,y
+
+
+def simulate_specific_shocks_sequence(Para,Gamma0,agg_shocks,quadratic = True):
+    '''
+    Runs a simulation for a prespecified seqence of shocks
+    '''
+    approximate.calibrate(Para)
+    Gamma,Y,Shocks,y = {},{},{},{}
+    Gamma[0] = Gamma0 #initialize 100 agents at m = 1 for testing purposes    
+    T=len(agg_shocks)
+    t = 1
+    while t< T:
+        
+        v['agg_shock']=agg_shocks[t]
+        print t
+        v.execute('approximate.shock=agg_shock')
+
+        Gamma[t],Y[t-1], Shocks[t-1],y[t-1]= update_state_parallel(Para,Gamma[t-1],quadratic)
+        t += 1
+    return Gamma,Y,Shocks,y
+
     
 def update_state_parallel(Para,Gamma,quadratic = True):
     '''

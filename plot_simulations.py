@@ -11,16 +11,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cPickle as pickle
 
-data = pickle.load( open( "data_initialization.pickle", "rb" ) )
+data = pickle.load( open( "data_irf_high_tfp_no_idiosyncratic_shocks.pickle", "rb" ) )
 Gamma,Y,Shocks,y=data
 indx_y,indx_Y,indx_Gamma=Para.indx_y,Para.indx_Y,Para.indx_Gamma
 T=len(Shocks)
+N=np.shape(Gamma[0])[0]
 mu,output,g,assets,bar_g,simulation_data={},{},{},{},{},{}
 for t in range(T-1):
-    if np.shape(y[t])[1]<10:
-        y[t]=np.hstack((y[t][:,0:1],np.atleast_2d(Shocks[0]).reshape(N,1),y[t][:,1:]))
-    
-    output[t]=np.atleast_2d(y[t][:,indx_y['l']]*np.exp(y[t][:,indx_y['e']])).reshape(N,1)
+    output[t]=np.atleast_2d(y[t][:,indx_y['l']]*np.exp(y[t][:,indx_y['wages']])).reshape(N,1)
     mu[t]=np.exp(y[t][:,indx_y['logm']])*(y[t][:,indx_y['muhat']])
     #g[t]=(1-mu[t]*(1+Para.gamma))*((y[t][:,indx_y['c']])**(-Para.sigma))
     #bar_g[t]=np.mean(g[t])    
@@ -35,9 +33,9 @@ for t in range(T-1):
     #assets[t]=np.atleast_2d(assets[t]).reshape(N,1)    
     #simulation_data[t]=np.hstack((output[t],g[t],assets[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
     #simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
-    simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
-    simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
-    panel_data=pd.Panel(simulation_data,minor_axis=['y','mu','logm','muhat','e','c','l','rho1_','rho2','phi','w_e','UcP','a','x_','kappa_','shocks'])
+    simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t]))
+    simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t]))
+    panel_data=pd.Panel(simulation_data,minor_axis=['y','mu','logm','muhat','e','c' ,'l','rho1_','rho2','phi','wages','UcP','a','x_','kappa_'])
 
 #panel_data.to_pickle('simulation_data.dat')
 
@@ -78,13 +76,15 @@ low_q_y,m_q_y,high_q_y=get_quantiles('y')
 
 low_q_l,m_q_l,high_q_l=get_quantiles('l')
 
+low_q_a,m_q_a,high_q_a=get_quantiles('a')
+
 cov_data_c_y=get_cov('c','y')
 plt.close('all')
 f,((ax1,ax2),(ax3,ax4)) =plt.subplots(2,2,sharex='col')
 lines_c=ax1.plot( np.array([low_q_c,m_q_c,high_q_c]).T)
 lines_y=ax2.plot( np.array([low_q_y,m_q_y,high_q_y]).T)
 lines_l=ax3.plot( np.array([low_q_l,m_q_l,high_q_l]).T)
-lines_cov=ax4.plot(cov_data_c_y)
+lines_a=ax4.plot( np.array([low_q_a,m_q_a,high_q_a]).T)
 
 plt.setp(lines_c[0],color='k',ls='--')
 plt.setp(lines_c[1],color='k')
@@ -101,7 +101,11 @@ plt.setp(lines_l[1],color='k')
 plt.setp(lines_l[2],color='k',ls='--')
 
 
-plt.setp(lines_cov[0],color='k')
+
+plt.setp(lines_a[0],color='k',ls='--')
+plt.setp(lines_a[1],color='k')
+plt.setp(lines_a[2],color='k',ls='--')
+
 
 
 
@@ -109,11 +113,12 @@ ax1.set_title(r'consumption')
 
 ax2.set_title(r'output')
 
-ax3.set_title(r'output')
+ax3.set_title(r'labor')
 
-ax4.set_title(r'cov(c,y)')
+ax4.set_title(r'assets')
 
-plt.savefig('quantiles_pers_no_agg_shocks.png',dpi=300)
+
+plt.savefig('quantiles.png',dpi=300)
 
 
 
@@ -126,6 +131,32 @@ plt.ylabel(r'$\tau$')
 #figure = plt.gcf() # get current figure
 #figure.set_size_inches(8, 6)
 # when saving, specify the DPI
-plt.savefig('taxes_pers_no_agg_shocks.png',dpi=300)
+plt.savefig('taxes.png',dpi=300)
+
+
+
+
+plt.figure()
+plot_agg_var('T')
+plt.title('Transfers')
+plt.xlabel('t')
+plt.ylabel(r'$T$')
+#figure = plt.gcf() # get current figure
+#figure.set_size_inches(8, 6)
+# when saving, specify the DPI
+plt.savefig('Transfers.png',dpi=300)
+
+
+plt.figure()
+plot(sum(panel_data.minor_xs('a')),'k')
+plt.title('Debt')
+plt.xlabel('t')
+plt.ylabel(r'$-B_t$')
+#figure = plt.gcf() # get current figure
+#figure.set_size_inches(8, 6)
+# when saving, specify the DPI
+plt.savefig('Debt.png',dpi=300)
+
+
 
 

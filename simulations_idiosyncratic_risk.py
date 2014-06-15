@@ -6,8 +6,8 @@ import cPickle as pickle
 # INITIAL DISTRIBUTION FOR EXERCISES
 
 N=10000
-T_init=200
-T_long=200
+T_init=100
+T_long=100
 T_long_drift=50
 T_imp=5
 T_ss=10
@@ -20,11 +20,14 @@ v = simulate.v
 v.execute('import numpy as np')
 v.execute('import calibrate_begs_id_nu_ces as Para')
 v.execute('import approximate_begs as approximate')
+v.execute('old_phat=Para.phat[:]')
+v.execute('Para.phat[:] = 0.')
 v.execute('approximate.calibrate(Para)')
 v.execute('approximate.logm_min = -100.')
 simulate.simulate(Para,Gamma,Y,Shocks,y,T_init) #simulate 150 period with no aggregate shocks
 data_initialization = Gamma,Y,Shocks,y
 Gamma0 = Gamma[T_init-1]
+v.execute('Para.phat[:]=old_phat')
 with open('data_initialization.pickle', 'wb') as f:
     pickle.dump(data_initialization , f)
     
@@ -47,7 +50,7 @@ data_long_sample_no_agg_shock = Gamma,Y,Shocks,y
 v.execute('Para.sigma_E=old_sigma_E')
 v.execute('approximate.shock = old_shock_status')
 v.execute('approximate.calibrate(Para)')
-with open('data_long_sample_no_agg_shock .pickle', 'wb') as f:
+with open('data_long_sample_no_agg_shock.pickle', 'wb') as f:
     pickle.dump(data_long_sample_no_agg_shock , f)
 
 

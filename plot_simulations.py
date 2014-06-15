@@ -11,7 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cPickle as pickle
 
-data = pickle.load( open( "data_irf_high_tfp_no_idiosyncratic_shocks.pickle", "rb" ) )
+data = pickle.load( open( "data_long_sample_with_agg_shock.pickle", "rb" ) )
 Gamma,Y,Shocks,y=data
 indx_y,indx_Y,indx_Gamma=Para.indx_y,Para.indx_Y,Para.indx_Gamma
 T=len(Shocks)
@@ -41,9 +41,9 @@ for t in range(T-1):
 
 def get_quantiles(var):
     var_data=panel_data.minor_xs(var)
-    low_q=var_data.quantile(.25,axis=0)
+    low_q=var_data.quantile(.10,axis=0)
     m_q=var_data.quantile(.5,axis=0)
-    high_q=var_data.quantile(.75,axis=0)    
+    high_q=var_data.quantile(.9,axis=0)    
     plt.plot(np.array([low_q,m_q,high_q]).T)
     return low_q,m_q,high_q
 
@@ -78,7 +78,7 @@ low_q_l,m_q_l,high_q_l=get_quantiles('l')
 
 low_q_a,m_q_a,high_q_a=get_quantiles('a')
 
-cov_data_c_y=get_cov('c','y')
+
 plt.close('all')
 f,((ax1,ax2),(ax3,ax4)) =plt.subplots(2,2,sharex='col')
 lines_c=ax1.plot( np.array([low_q_c,m_q_c,high_q_c]).T)
@@ -148,7 +148,7 @@ plt.savefig('Transfers.png',dpi=300)
 
 
 plt.figure()
-plot(sum(panel_data.minor_xs('a')),'k')
+plt.plot(sum(panel_data.minor_xs('a')),'k')
 plt.title('Debt')
 plt.xlabel('t')
 plt.ylabel(r'$-B_t$')
@@ -159,4 +159,58 @@ plt.savefig('Debt.png',dpi=300)
 
 
 
+cov_data_c_y=get_cov('c','y')
+cov_data_a_y=get_cov('a','y')
+cov_data_a_c=get_cov('a','c')
+cov_data_l_c=get_cov('l','c')
+
+
+f,((ax1,ax2),(ax3,ax4)) =plt.subplots(2,2,sharex='col')
+lines_cov_c_y=ax1.plot(cov_data_c_y)
+lines_cov_a_y=ax2.plot(cov_data_a_y)
+lines_cov_a_c=ax3.plot(cov_data_a_c)
+lines_cov_l_c=ax4.plot(cov_data_l_c)
+
+plt.setp(lines_cov_c_y,color='k')
+plt.setp(lines_cov_a_y,color='k')
+plt.setp(lines_cov_a_c,color='k')
+plt.setp(lines_cov_l_c,color='k')
+
+
+ax1.set_title(r'c,y')
+ax2.set_title(r'a,y')
+ax3.set_title(r'a,c')
+ax4.set_title(r'l,c')
+
+
+plt.savefig('covariances.png',dpi=300)
+
+
+
+
+cov_data_c_c=get_cov('c','c')
+cov_data_a_a=get_cov('a','a')
+cov_data_l_l=get_cov('l','l')
+cov_data_y_y=get_cov('y','y')
+
+
+f,((ax1,ax2),(ax3,ax4)) =plt.subplots(2,2,sharex='col')
+lines_cov_c_c=ax1.plot(cov_data_c_c)
+lines_cov_a_a=ax2.plot(cov_data_a_a)
+lines_cov_l_l=ax3.plot(cov_data_l_l)
+lines_cov_y_y=ax4.plot(cov_data_y_y)
+
+plt.setp(lines_cov_c_c,color='k')
+plt.setp(lines_cov_a_a,color='k')
+plt.setp(lines_cov_l_l,color='k')
+plt.setp(lines_cov_y_y,color='k')
+
+
+ax1.set_title(r'c')
+ax2.set_title(r'a')
+ax3.set_title(r'l')
+ax4.set_title(r'y')
+
+
+plt.savefig('variances.png',dpi=300)
 

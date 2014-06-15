@@ -8,7 +8,7 @@ import cPickle as pickle
 N=10000
 T_init=100
 T_long=100
-T_long_drift=50
+T_long_drift=100
 T_imp=5
 T_ss=10
 
@@ -102,6 +102,12 @@ with open('data_long_drift_low_shocks.pickle', 'wb') as f:
 
 
 
+
+
+
+
+
+
 # EX3 Impulse REsponse with idiosyncratic shocks
 # High TFP
 v.execute('np.random.set_state(state)')
@@ -151,4 +157,38 @@ data_irf_low_tfp_no_idiosyncratic_shocks= Gamma,Y,Shocks,y
 with open('data_irf_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_low_tfp_no_idiosyncratic_shocks, f)
 
+
+# EX3 Drfiting of taxes without idiosyncratic risk
+#Simulate all high shocks 
+
+v.execute('approximate.shock = 1.')
+v.execute('np.random.set_state(state)')
+Gamma,Y,Shocks,y = {},{},{},{}
+Gamma[0] = Gamma0
+simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
+data_long_drift_high_tfp_no_idiosyncratic_shocks= Gamma,Y,Shocks,y
+with open('data_long_drift_high_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
+    pickle.dump(data_long_drift_high_tfp_no_idiosyncratic_shocks, f)
+
+
+#simulate all no shocks
+v.execute('approximate.shock = 0.')
+v.execute('np.random.set_state(state)')
+Gamma,Y,Shocks,y = {},{},{},{}
+Gamma[0] = Gamma0
+simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
+data_long_drift_no_tfp_no_idiosyncratic_shocks= Gamma,Y,Shocks,y
+with open('data_long_drift_no_tfp_no_idiosyncratic_shocks', 'wb') as f:
+    pickle.dump(data_long_drift_no_tfp_no_idiosyncratic_shocks, f)
+
+
+#simulate all low shocks
+v.execute('approximate.shock = -1.')
+v.execute('np.random.set_state(state)')
+Gamma,Y,Shocks,y = {},{},{},{}
+Gamma[0] = Gamma0
+simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
+data_long_drift_low_tfp_no_idiosyncratic_shocks= Gamma,Y,Shocks,y
+with open('data_long_drift_low_tfp_no_idiosyncratic_shocks', 'wb') as f:
+    pickle.dump(data_long_drift_low_tfp_no_idiosyncratic_shocks, f)
 

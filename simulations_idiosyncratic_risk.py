@@ -5,10 +5,13 @@ import cPickle as pickle
 
 # INITIAL DISTRIBUTION FOR EXERCISES
 
+print 'begin initiliazation'
+
+
 N=10000
 T_init=100
-T_long=100
-T_long_drift=100
+T_long=200
+T_long_drift=75
 T_imp=5
 T_ss=10
 
@@ -33,10 +36,16 @@ with open('data_initialization.pickle', 'wb') as f:
     
     
 
+print '....initialized'
+
 
 
 
 # EX1 Long run simulations with and without aggregate shocks
+
+
+print 'begin long simulation without aggregate shocks'
+
 v.execute('state = np.random.get_state()') #save random state
 # without aggregate shocks
 v.execute('old_shock_status=approximate.shock ')
@@ -53,8 +62,12 @@ v.execute('approximate.calibrate(Para)')
 with open('data_long_sample_no_agg_shock.pickle', 'wb') as f:
     pickle.dump(data_long_sample_no_agg_shock , f)
 
+print '...done long simulation without aggregate shocks'
 
 # with aggregate shocks
+
+print 'begin long simulation with aggregate shocks'
+
 v.execute('np.random.set_state(state)') #use the random state
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0]=Gamma0
@@ -64,9 +77,16 @@ with open('data_long_sample_with_agg_shock.pickle', 'wb') as f:
     pickle.dump(data_long_sample_with_agg_shock, f)
 
 
+print '..done long simulation with aggregate shocks'
 
+
+Gamma0=Gamma[0]
 
 # EX2 Drfiting of taxes
+
+print 'begin long drift with idiosyncratic shocks'
+
+
 #Simulate all high shocks 
 v.execute('approximate.shock = 1.')
 v.execute('np.random.set_state(state)')
@@ -102,6 +122,7 @@ with open('data_long_drift_low_shocks.pickle', 'wb') as f:
 
 
 
+print '... done long drift with idiosyncratic shocks'
 
 
 
@@ -109,6 +130,8 @@ with open('data_long_drift_low_shocks.pickle', 'wb') as f:
 
 
 # EX3 Impulse REsponse with idiosyncratic shocks
+print 'begin irf with idiosyncratic shocks'
+
 # High TFP
 v.execute('np.random.set_state(state)')
 Gamma[0] = Gamma0
@@ -132,9 +155,13 @@ with open('data_irf_low_tfp_with_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_low_tfp_with_idiosyncratic_shocks, f)
 
 
+print '... done irf with idiosyncratic shocks'
 
 
 # EX3 Impulse REsponse without idiosyncratic shocks
+
+print 'begin irf drift without idiosyncratic shocks'
+
 v.execute('Para.sigma_e[:] = 0.')
 v.execute('Para.phat[:] = 0.')
 # High TFP
@@ -158,7 +185,12 @@ with open('data_irf_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_low_tfp_no_idiosyncratic_shocks, f)
 
 
-# EX3 Drfiting of taxes without idiosyncratic risk
+print '...done irf without idiosyncratic shocks'
+
+
+# EX4 Drfiting of taxes without idiosyncratic risk
+print 'begin long drift without idiosyncratic shocks'
+
 #Simulate all high shocks 
 
 v.execute('approximate.shock = 1.')
@@ -192,3 +224,4 @@ data_long_drift_low_tfp_no_idiosyncratic_shocks= Gamma,Y,Shocks,y
 with open('data_long_drift_low_tfp_no_idiosyncratic_shocks', 'wb') as f:
     pickle.dump(data_long_drift_low_tfp_no_idiosyncratic_shocks, f)
 
+print '... done long drift without idiosyncratic shocks'

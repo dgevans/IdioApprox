@@ -23,7 +23,7 @@ def calibrate(Para):
     global Finv,GSS,ny,ne,nY,nz,nv,Y0
     Finv,GSS = Para.Finv,Para.GSS
     ny,ne,nY,nz,nv = Para.ny,Para.ne,Para.nY,Para.nz,Para.nv
-    Y0 =0.5*np.ones(nY)
+    Y0 =np.ones(nY)
     
 class steadystate(object):
     '''

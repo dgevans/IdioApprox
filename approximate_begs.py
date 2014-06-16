@@ -79,8 +79,8 @@ Para = None
 
 shock = None
 
-logm_min = -4.
-muhat_min = -80.
+logm_min = -3.
+muhat_min = -100.
 
 y,e,Y,z,v,eps,Eps,p,S,sigma,sigma_E = [None]*11
 #interpolate = utilities.interpolator_factory([3])

@@ -7,8 +7,8 @@ Created on Thu Apr 17 12:18:27 2014
 import numpy as np
 
 beta = 0.95
-gamma = 2.
-sigma = 2.
+gamma = 0.5
+sigma = 0.5
 sigma_e = np.array([0.05,0.2])
 sigma_E = 0.03
 chi = 0.

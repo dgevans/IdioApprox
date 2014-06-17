@@ -11,7 +11,7 @@ print 'begin initiliazation'
 N=7500
 T_init=125
 T_long=100
-T_long_drift=75
+T_long_drift=50
 T_imp=5
 T_ss=10
 
@@ -32,7 +32,7 @@ v.execute('Para.sigma_E= 0.')
 
 v.execute('approximate.calibrate(Para)')
 simulate.simulate(Para,Gamma,Y,Shocks,y,T_init) #simulate 150 period with no aggregate shocks
-data_initialization = Gamma,Y,Shocks,y
+data_initialization = Y,y
 Gamma0 = Gamma[T_init-1]
 with open('data_initialization.pickle', 'wb') as f:
     pickle.dump(data_initialization , f)
@@ -61,7 +61,7 @@ v.execute('Para.sigma_E= 0.')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0]=Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,T_long) #Keep off Aggregate shocks
-data_long_sample_no_agg_shock = Gamma,Y,Shocks,y
+data_long_sample_no_agg_shock = Y,y
 v.execute('Para.sigma_E=old_sigma_E')
 v.execute('approximate.shock = old_shock_status')
 v.execute('approximate.calibrate(Para)')
@@ -78,7 +78,7 @@ v.execute('np.random.set_state(state)') #use the random state
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0]=Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,T_long)
-data_long_sample_with_agg_shock = Gamma,Y,Shocks,y
+data_long_sample_with_agg_shock = Y,y
 with open('data_long_sample_with_agg_shock.pickle', 'wb') as f:
     pickle.dump(data_long_sample_with_agg_shock, f)
 
@@ -98,7 +98,7 @@ v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
-data_long_drift_high_shocks= Gamma,Y,Shocks,y
+data_long_drift_high_shocks= Y,y
 with open('data_long_drift_high_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_high_shocks, f)
 
@@ -109,7 +109,7 @@ v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
-data_long_drift_no_shocks= Gamma,Y,Shocks,y
+data_long_drift_no_shocks= Y,y
 with open('data_long_drift_no_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_no_shocks, f)
 
@@ -120,7 +120,7 @@ v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
-data_long_drift_low_shocks= Gamma,Y,Shocks,y
+data_long_drift_low_shocks= Y,y
 with open('data_long_drift_low_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_low_shocks, f)
 
@@ -143,7 +143,7 @@ Gamma[0] = Gamma0
 agg_shocks=np.hstack((np.ones(T_imp),0*np.ones(T_ss)))
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma,Y,Shocks,y=simulate.simulate_specific_shocks_sequence(Para,Gamma0,agg_shocks)
-data_irf_high_tfp_with_idiosyncratic_shocks= Gamma,Y,Shocks,y
+data_irf_high_tfp_with_idiosyncratic_shocks= Y,y
 with open('data_irf_high_tfp_with_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_high_tfp_with_idiosyncratic_shocks, f)
 
@@ -155,7 +155,7 @@ Gamma[0] = Gamma0
 agg_shocks=np.hstack((-1*np.ones(T_imp),0*np.ones(T_ss)))
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma,Y,Shocks,y=simulate.simulate_specific_shocks_sequence(Para,Gamma0,agg_shocks)
-data_irf_low_tfp_with_idiosyncratic_shocks= Gamma,Y,Shocks,y
+data_irf_low_tfp_with_idiosyncratic_shocks= Y,y
 with open('data_irf_low_tfp_with_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_low_tfp_with_idiosyncratic_shocks, f)
 
@@ -174,7 +174,7 @@ Gamma[0] = Gamma0
 agg_shocks=np.hstack((np.ones(T_imp),0*np.ones(T_ss)))
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma,Y,Shocks,y=simulate.simulate_specific_shocks_sequence(Para,Gamma0,agg_shocks)
-data_irf_high_tfp_no_idiosyncratic_shocks= Gamma,Y,Shocks,y
+data_irf_high_tfp_no_idiosyncratic_shocks= Y,y
 with open('data_irf_high_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_high_tfp_no_idiosyncratic_shocks, f)
 
@@ -185,7 +185,7 @@ Gamma[0] = Gamma0
 agg_shocks=np.hstack((-1*np.ones(T_imp),0*np.ones(T_ss)))
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma,Y,Shocks,y=simulate.simulate_specific_shocks_sequence(Para,Gamma0,agg_shocks)
-data_irf_low_tfp_no_idiosyncratic_shocks= Gamma,Y,Shocks,y
+data_irf_low_tfp_no_idiosyncratic_shocks= Y,y
 with open('data_irf_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_low_tfp_no_idiosyncratic_shocks, f)
 
@@ -203,7 +203,7 @@ v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
-data_long_drift_high_tfp_no_idiosyncratic_shocks= Gamma,Y,Shocks,y
+data_long_drift_high_tfp_no_idiosyncratic_shocks= Y,y
 with open('data_long_drift_high_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_high_tfp_no_idiosyncratic_shocks, f)
 
@@ -215,7 +215,7 @@ v.execute('np.random.set_state(state)')
 Gamma,Y,Shocks,y = {},{},{},{}
 Gamma[0] = Gamma0
 simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
-data_long_drift_low_tfp_no_idiosyncratic_shocks= Gamma,Y,Shocks,y
+data_long_drift_low_tfp_no_idiosyncratic_shocks= Y,y
 with open('data_long_drift_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_low_tfp_no_idiosyncratic_shocks, f)
 

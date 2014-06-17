@@ -12,8 +12,7 @@ import matplotlib.pyplot as plt
 import cPickle as pickle
 import os as os
 listofdatafiles=[
-
-#'initialization',
+'initialization',
 #'irf_high_tfp_no_idiosyncratic_shocks',
 #'irf_high_tfp_no_idiosyncratic_shocks',
 #'irf_high_tfp_with_idiosyncratic_shocks',
@@ -26,7 +25,7 @@ listofdatafiles=[
 #'long_drift_low_shocks',
 #'long_drift_no_shocks',
 #'long_sample_no_agg_shock',
-'long_sample_with_agg_shock'
+#'long_sample_with_agg_shock'
 
 ]
 
@@ -36,10 +35,10 @@ for name in listofdatafiles:
     data = pickle.load( open( name_of_file, "rb" ) )    
     copy_command='cp *.png /home/anmol/IdioApprox/Graphs/'+ name+ '/'
     
-    Gamma,Y,Shocks,y=data
+    Y,y=data
     indx_y,indx_Y,indx_Gamma=Para.indx_y,Para.indx_Y,Para.indx_Gamma
-    T=len(Shocks)
-    N=np.shape(Gamma[0])[0]
+    T=len(Y)
+    N=np.shape(Y[0])[0]
     mu,output,g,assets,bar_g,simulation_data={},{},{},{},{},{}
     for t in range(T-1):
         output[t]=np.atleast_2d(y[t][:,indx_y['l']]*np.exp(y[t][:,indx_y['wages']])).reshape(N,1)

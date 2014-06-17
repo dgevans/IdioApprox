@@ -13,32 +13,31 @@ import cPickle as pickle
 import os as os
 listofdatafiles=[
 'initialization',
-#'irf_high_tfp_no_idiosyncratic_shocks',
-#'irf_high_tfp_no_idiosyncratic_shocks',
-#'irf_high_tfp_with_idiosyncratic_shocks',
-#'irf_low_tfp_no_idiosyncratic_shocks',
-#'irf_low_tfp_with_idiosyncratic_shocks',
-#'long_drift_high_shocks',
-#'long_drift_high_tfp_no_idiosyncratic_shocks',
-#'long_drift_low_tfp_no_idiosyncratic_shocks',
-#'long_drift_no_tfp_no_idiosyncratic_shocks',
-#'long_drift_low_shocks',
-#'long_drift_no_shocks',
-#'long_sample_no_agg_shock',
-#'long_sample_with_agg_shock'
-
+'irf_high_tfp_no_idiosyncratic_shocks',
+'irf_high_tfp_no_idiosyncratic_shocks',
+'irf_high_tfp_with_idiosyncratic_shocks',
+'irf_low_tfp_no_idiosyncratic_shocks',
+'irf_low_tfp_with_idiosyncratic_shocks',
+'long_drift_high_shocks',
+'long_drift_high_tfp_no_idiosyncratic_shocks',
+'long_drift_low_tfp_no_idiosyncratic_shocks',
+'long_drift_low_shocks',
+'long_drift_no_shocks',
+'long_sample_no_agg_shock',
+'long_sample_with_agg_shock'
 ]
 
+truncation=.99
 for name in listofdatafiles:
     print name
-    name_of_file='data'+'_'+name+'.pickle'    
+    name_of_file='/home/anmol/IdioApprox/data_bond_economy/'+'data'+'_'+name+'.pickle'    
     data = pickle.load( open( name_of_file, "rb" ) )    
     copy_command='cp *.png /home/anmol/IdioApprox/Graphs/'+ name+ '/'
     
     Y,y=data
     indx_y,indx_Y,indx_Gamma=Para.indx_y,Para.indx_Y,Para.indx_Gamma
     T=len(Y)
-    N=np.shape(Y[0])[0]
+    N=np.shape(y[0])[0]
     mu,output,g,assets,bar_g,simulation_data={},{},{},{},{},{}
     for t in range(T-1):
         output[t]=np.atleast_2d(y[t][:,indx_y['l']]*np.exp(y[t][:,indx_y['wages']])).reshape(N,1)
@@ -72,9 +71,16 @@ for name in listofdatafiles:
     
     
     def get_cov(var_1,var_2):
-        cov_data= map(lambda t: np.cov(panel_data.minor_xs(var_1)[t],panel_data.minor_xs(var_2)[t])[0,1],range(T-1))
+        cov_data= map(lambda t: np.corrcoef(panel_data.minor_xs(var_1)[t][panel_data.minor_xs(var_1)[t]<panel_data.minor_xs(var_1)[t].quantile(truncation)],panel_data.minor_xs(var_2)[t][panel_data.minor_xs(var_2)[t]<panel_data.minor_xs(var_2)[t].quantile(truncation)])[0,1],range(T-1))
         
         return cov_data
+    
+
+    
+    def get_var(variable):
+        var_data= map(lambda t:  np.std(panel_data.minor_xs(variable)[t][panel_data.minor_xs(variable)[t]<panel_data.minor_xs(variable)[t].quantile(truncation)])/(np.mean(panel_data.minor_xs(variable)[t][panel_data.minor_xs(variable)[t]<panel_data.minor_xs(variable)[t].quantile(truncation)])),range(T-1))
+        
+        return var_data    
     
     
     
@@ -205,15 +211,15 @@ for name in listofdatafiles:
     ax4.set_title(r'l,c')
     
     
-    plt.savefig('covariances.png',dpi=300)
+    plt.savefig('correlations.png',dpi=300)
     
     
     
     
-    cov_data_c_c=get_cov('c','c')
-    cov_data_a_a=get_cov('a','a')
-    cov_data_l_l=get_cov('l','l')
-    cov_data_y_y=get_cov('y','y')
+    cov_data_c_c=get_var('c')
+    cov_data_a_a=get_var('a')
+    cov_data_l_l=get_var('l')
+    cov_data_y_y=get_var('y')
     
     
     f,((ax1,ax2),(ax3,ax4)) =plt.subplots(2,2,sharex='col')
@@ -234,6 +240,6 @@ for name in listofdatafiles:
     ax4.set_title(r'y')
     
     
-    plt.savefig('variances.png',dpi=300)
+    plt.savefig('coeff_variation.png',dpi=300)
     
     os.system(copy_command)

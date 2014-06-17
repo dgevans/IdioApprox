@@ -2,13 +2,15 @@ import simulate
 import calibrate_begs_id_nu_ces as Para
 import numpy as np
 import cPickle as pickle
+import process_plot_data as ppd
+
 
 # INITIAL DISTRIBUTION FOR EXERCISES
 
 print 'begin initiliazation'
 
 
-N=7500
+N=10000
 T_init=125
 T_long=100
 T_long_drift=50
@@ -36,6 +38,7 @@ data_initialization = Y,y
 Gamma0 = Gamma[T_init-1]
 with open('data_initialization.pickle', 'wb') as f:
     pickle.dump(data_initialization , f)
+ppd.save_plot_data(data_initialization,'plot_data_initialization.pickle')
 v.execute('Para.sigma_E=old_sigma_E')
 v.execute('approximate.shock = old_shock_status')
 v.execute('approximate.calibrate(Para)')
@@ -67,7 +70,7 @@ v.execute('approximate.shock = old_shock_status')
 v.execute('approximate.calibrate(Para)')
 with open('data_long_sample_no_agg_shock.pickle', 'wb') as f:
     pickle.dump(data_long_sample_no_agg_shock , f)
-
+ppd.save_plot_data(data_long_sample_no_agg_shock,'plot_data_long_sample_no_agg_shock.pickle')
 print '...done long simulation without aggregate shocks'
 
 # with aggregate shocks
@@ -82,7 +85,7 @@ data_long_sample_with_agg_shock = Y,y
 with open('data_long_sample_with_agg_shock.pickle', 'wb') as f:
     pickle.dump(data_long_sample_with_agg_shock, f)
 
-
+ppd.save_plot_data(data_long_sample_with_agg_shock,'plot_data_long_sample_with_agg_shock.pickle')
 print '..done long simulation with aggregate shocks'
 
 
@@ -101,7 +104,7 @@ simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
 data_long_drift_high_shocks= Y,y
 with open('data_long_drift_high_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_high_shocks, f)
-
+ppd.save_plot_data(data_long_drift_high_shocks,'plot_data_long_drift_high_shocks.pickle')
 
 #simulate all no shocks
 v.execute('approximate.shock = 0.')
@@ -113,6 +116,8 @@ data_long_drift_no_shocks= Y,y
 with open('data_long_drift_no_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_no_shocks, f)
 
+ppd.save_plot_data(data_long_drift_no_shocks,'plot_data_long_drift_no_shocks.pickle')
+
 
 #simulate all low shocks
 v.execute('approximate.shock = -1.')
@@ -123,7 +128,7 @@ simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
 data_long_drift_low_shocks= Y,y
 with open('data_long_drift_low_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_low_shocks, f)
-
+ppd.save_plot_data(data_long_drift_low_shocks,'plot_data_long_drift_low_shocks.pickle')
 
 
 
@@ -147,6 +152,7 @@ data_irf_high_tfp_with_idiosyncratic_shocks= Y,y
 with open('data_irf_high_tfp_with_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_high_tfp_with_idiosyncratic_shocks, f)
 
+ppd.save_plot_data(data_irf_high_tfp_with_idiosyncratic_shocks,'plot_data_irf_high_tfp_with_idiosyncratic_shocks.pickle')
 
 
 # Low TFP
@@ -159,6 +165,7 @@ data_irf_low_tfp_with_idiosyncratic_shocks= Y,y
 with open('data_irf_low_tfp_with_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_low_tfp_with_idiosyncratic_shocks, f)
 
+ppd.save_plot_data(data_irf_low_tfp_with_idiosyncratic_shocks,'plot_data_irf_low_tfp_with_idiosyncratic_shocks.pickle')
 
 print '... done irf with idiosyncratic shocks'
 
@@ -178,6 +185,7 @@ data_irf_high_tfp_no_idiosyncratic_shocks= Y,y
 with open('data_irf_high_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_high_tfp_no_idiosyncratic_shocks, f)
 
+ppd.save_plot_data(data_irf_high_tfp_no_idiosyncratic_shocks,'plot_data_irf_high_tfp_no_idiosyncratic_shocks.pickle')
 
 
 # Low TFP
@@ -189,6 +197,7 @@ data_irf_low_tfp_no_idiosyncratic_shocks= Y,y
 with open('data_irf_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_low_tfp_no_idiosyncratic_shocks, f)
 
+ppd.save_plot_data(data_irf_low_tfp_no_idiosyncratic_shocks,'plot_data_irf_low_tfp_no_idiosyncratic_shocks.pickle')
 
 print '...done irf without idiosyncratic shocks'
 
@@ -207,6 +216,7 @@ data_long_drift_high_tfp_no_idiosyncratic_shocks= Y,y
 with open('data_long_drift_high_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_high_tfp_no_idiosyncratic_shocks, f)
 
+ppd.save_plot_data(data_long_drift_high_tfp_no_idiosyncratic_shocks,'plot_data_long_drift_high_tfp_no_idiosyncratic_shocks.pickle')
 
 
 #simulate all low shocks
@@ -220,3 +230,4 @@ with open('data_long_drift_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_low_tfp_no_idiosyncratic_shocks, f)
 
 print '... done long drift without idiosyncratic shocks'
+ppd.save_plot_data(data_long_drift_low_tfp_no_idiosyncratic_shocks,'plot_data_long_drift_low_tfp_no_idiosyncratic_shocks.pickle')

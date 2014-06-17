@@ -11,7 +11,7 @@ gamma = 1.0
 sigma = 0.5
 sigma_e = np.array([0.12,0.2])
 sigma_E = 0.03
-chi = 0.595
+chi = 1.0
 
 ll = np.array([-np.inf,-np.inf,-np.inf])
 ul = np.array([np.inf,np.inf,np.inf])
@@ -26,7 +26,7 @@ nv = 2 # number of forward looking terms (x_t,rho1_t)
 n_p = 1 #number of parameters
 neps = len(sigma_e)
 
-phat = np.array([-0.01])
+phat = np.array([-0.020])
 
 indx_y={'logm':0,'muhat':1,'e':2,'c' :3,'l':4,'rho1_':5,'rho2':6,'phi':7,'wages':8,'UcP':9,'a':10,'x_':11,'kappa_':12,'pers_shock':13,'trans_shock':14}
 indx_Y={'alpha1':0,'alpha2':1,'taxes':2,'eta':3,'lambda':4,'T':5,'shock':6}

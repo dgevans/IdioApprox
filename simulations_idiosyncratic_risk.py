@@ -10,7 +10,7 @@ print 'begin initiliazation'
 
 N=7500
 T_init=125
-T_long=150
+T_long=100
 T_long_drift=75
 T_imp=5
 T_ss=10

@@ -7,11 +7,11 @@ Created on Thu Apr 17 12:18:27 2014
 import numpy as np
 
 beta = 0.95
-gamma = 0.5
+gamma = 1.0
 sigma = 0.5
-sigma_e = np.array([0.05,0.2])
+sigma_e = np.array([0.12,0.2])
 sigma_E = 0.03
-chi = 0.
+chi = 0.595
 
 ll = np.array([-np.inf,-np.inf,-np.inf])
 ul = np.array([np.inf,np.inf,np.inf])

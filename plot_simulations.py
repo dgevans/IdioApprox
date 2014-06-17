@@ -11,23 +11,25 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cPickle as pickle
 import os as os
-#==============================================================================
-# listofdatafiles=['initialization',
-# 'irf_high_tfp_no_idiosyncratic_shocks',
-# 'irf_high_tfp_with_idiosyncratic_shocks',
-# 'irf_low_tfp_no_idiosyncratic_shocks',
-# 'irf_low_tfp_with_idiosyncratic_shocks',
-# 'long_drift_high_shocks',
-# 'long_drift_high_tfp_no_idiosyncratic_shocks',
-# 'long_drift_low_tfp_no_idiosyncratic_shocks',
-# 'long_drift_no_tfp_no_idiosyncratic_shocks',
-# 'long_drift_low_shocks',
-# 'long_drift_no_shocks',
-# 'long_sample_no_agg_shock',
-# 'long_sample_with_agg_shock']
-#==============================================================================
+listofdatafiles=[
 
-listofdatafiles=['long_sample_with_agg_shock']
+#'initialization',
+#'irf_high_tfp_no_idiosyncratic_shocks',
+#'irf_high_tfp_no_idiosyncratic_shocks',
+#'irf_high_tfp_with_idiosyncratic_shocks',
+#'irf_low_tfp_no_idiosyncratic_shocks',
+#'irf_low_tfp_with_idiosyncratic_shocks',
+#'long_drift_high_shocks',
+#'long_drift_high_tfp_no_idiosyncratic_shocks',
+#'long_drift_low_tfp_no_idiosyncratic_shocks',
+#'long_drift_no_tfp_no_idiosyncratic_shocks',
+#'long_drift_low_shocks',
+#'long_drift_no_shocks',
+#'long_sample_no_agg_shock',
+'long_sample_with_agg_shock'
+
+]
+
 for name in listofdatafiles:
     print name
     name_of_file='data'+'_'+name+'.pickle'    

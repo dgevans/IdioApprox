@@ -9,8 +9,8 @@ truncation=.99
 
 N=7500
 T_init=125
-T_long=100
-T_long_drift=50
+T_long=125
+T_long_drift=75
 T_imp=5
 T_ss=10
 
@@ -206,29 +206,33 @@ with open('data_long_drift_high_shocks.pickle', 'wb') as f:
     pickle.dump(data_long_drift_high_shocks, f)
 save_plot_data(data_long_drift_high_shocks,'plot_data_long_drift_high_shocks.pickle')
 
-#simulate all no shocks
-v.execute('approximate.shock = 0.')
-v.execute('np.random.set_state(state)')
-Gamma,Y,Shocks,y = {},{},{},{}
-Gamma[0] = Gamma0
-simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
-data_long_drift_no_shocks= Y,y
-with open('data_long_drift_no_shocks.pickle', 'wb') as f:
-    pickle.dump(data_long_drift_no_shocks, f)
 
-save_plot_data(data_long_drift_no_shocks,'plot_data_long_drift_no_shocks.pickle')
-
-
-#simulate all low shocks
-v.execute('approximate.shock = -1.')
-v.execute('np.random.set_state(state)')
-Gamma,Y,Shocks,y = {},{},{},{}
-Gamma[0] = Gamma0
-simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
-data_long_drift_low_shocks= Y,y
-with open('data_long_drift_low_shocks.pickle', 'wb') as f:
-    pickle.dump(data_long_drift_low_shocks, f)
-save_plot_data(data_long_drift_low_shocks,'plot_data_long_drift_low_shocks.pickle')
+#==============================================================================
+# 
+# #simulate all no shocks
+# v.execute('approximate.shock = 0.')
+# v.execute('np.random.set_state(state)')
+# Gamma,Y,Shocks,y = {},{},{},{}
+# Gamma[0] = Gamma0
+# simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
+# data_long_drift_no_shocks= Y,y
+# with open('data_long_drift_no_shocks.pickle', 'wb') as f:
+#     pickle.dump(data_long_drift_no_shocks, f)
+# 
+# save_plot_data(data_long_drift_no_shocks,'plot_data_long_drift_no_shocks.pickle')
+# 
+# 
+# #simulate all low shocks
+# v.execute('approximate.shock = -1.')
+# v.execute('np.random.set_state(state)')
+# Gamma,Y,Shocks,y = {},{},{},{}
+# Gamma[0] = Gamma0
+# simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
+# data_long_drift_low_shocks= Y,y
+# with open('data_long_drift_low_shocks.pickle', 'wb') as f:
+#     pickle.dump(data_long_drift_low_shocks, f)
+# save_plot_data(data_long_drift_low_shocks,'plot_data_long_drift_low_shocks.pickle')
+#==============================================================================
 
 
 
@@ -253,21 +257,23 @@ with open('data_irf_high_tfp_with_idiosyncratic_shocks.pickle', 'wb') as f:
     pickle.dump(data_irf_high_tfp_with_idiosyncratic_shocks, f)
 
 save_plot_data(data_irf_high_tfp_with_idiosyncratic_shocks,'plot_data_irf_high_tfp_with_idiosyncratic_shocks.pickle')
-
-
-# Low TFP
-v.execute('np.random.set_state(state)')
-Gamma[0] = Gamma0
-agg_shocks=np.hstack((-1*np.ones(T_imp),0*np.ones(T_ss)))
-Gamma,Y,Shocks,y = {},{},{},{}
-Gamma,Y,Shocks,y=simulate.simulate_specific_shocks_sequence(Para,Gamma0,agg_shocks)
-data_irf_low_tfp_with_idiosyncratic_shocks= Y,y
-with open('data_irf_low_tfp_with_idiosyncratic_shocks.pickle', 'wb') as f:
-    pickle.dump(data_irf_low_tfp_with_idiosyncratic_shocks, f)
-
-save_plot_data(data_irf_low_tfp_with_idiosyncratic_shocks,'plot_data_irf_low_tfp_with_idiosyncratic_shocks.pickle')
-
-print '... done irf with idiosyncratic shocks'
+#==============================================================================
+# 
+# 
+# # Low TFP
+# v.execute('np.random.set_state(state)')
+# Gamma[0] = Gamma0
+# agg_shocks=np.hstack((-1*np.ones(T_imp),0*np.ones(T_ss)))
+# Gamma,Y,Shocks,y = {},{},{},{}
+# Gamma,Y,Shocks,y=simulate.simulate_specific_shocks_sequence(Para,Gamma0,agg_shocks)
+# data_irf_low_tfp_with_idiosyncratic_shocks= Y,y
+# with open('data_irf_low_tfp_with_idiosyncratic_shocks.pickle', 'wb') as f:
+#     pickle.dump(data_irf_low_tfp_with_idiosyncratic_shocks, f)
+# 
+# save_plot_data(data_irf_low_tfp_with_idiosyncratic_shocks,'plot_data_irf_low_tfp_with_idiosyncratic_shocks.pickle')
+# 
+# print '... done irf with idiosyncratic shocks'
+#==============================================================================
 
 
 # EX3 Impulse REsponse without idiosyncratic shocks
@@ -287,19 +293,21 @@ with open('data_irf_high_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
 
 save_plot_data(data_irf_high_tfp_no_idiosyncratic_shocks,'plot_data_irf_high_tfp_no_idiosyncratic_shocks.pickle')
 
-
-# Low TFP
-Gamma[0] = Gamma0
-agg_shocks=np.hstack((-1*np.ones(T_imp),0*np.ones(T_ss)))
-Gamma,Y,Shocks,y = {},{},{},{}
-Gamma,Y,Shocks,y=simulate.simulate_specific_shocks_sequence(Para,Gamma0,agg_shocks)
-data_irf_low_tfp_no_idiosyncratic_shocks= Y,y
-with open('data_irf_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
-    pickle.dump(data_irf_low_tfp_no_idiosyncratic_shocks, f)
-
-save_plot_data(data_irf_low_tfp_no_idiosyncratic_shocks,'plot_data_irf_low_tfp_no_idiosyncratic_shocks.pickle')
-
-print '...done irf without idiosyncratic shocks'
+#==============================================================================
+# 
+# # Low TFP
+# Gamma[0] = Gamma0
+# agg_shocks=np.hstack((-1*np.ones(T_imp),0*np.ones(T_ss)))
+# Gamma,Y,Shocks,y = {},{},{},{}
+# Gamma,Y,Shocks,y=simulate.simulate_specific_shocks_sequence(Para,Gamma0,agg_shocks)
+# data_irf_low_tfp_no_idiosyncratic_shocks= Y,y
+# with open('data_irf_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
+#     pickle.dump(data_irf_low_tfp_no_idiosyncratic_shocks, f)
+# 
+# save_plot_data(data_irf_low_tfp_no_idiosyncratic_shocks,'plot_data_irf_low_tfp_no_idiosyncratic_shocks.pickle')
+# 
+# print '...done irf without idiosyncratic shocks'
+#==============================================================================
 
 
 # EX4 Drfiting of taxes without idiosyncratic risk
@@ -318,19 +326,21 @@ with open('data_long_drift_high_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
 
 save_plot_data(data_long_drift_high_tfp_no_idiosyncratic_shocks,'plot_data_long_drift_high_tfp_no_idiosyncratic_shocks.pickle')
 
-
-#simulate all low shocks
-v.execute('approximate.shock = -1.')
-v.execute('np.random.set_state(state)')
-Gamma,Y,Shocks,y = {},{},{},{}
-Gamma[0] = Gamma0
-simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
-data_long_drift_low_tfp_no_idiosyncratic_shocks= Y,y
-with open('data_long_drift_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
-    pickle.dump(data_long_drift_low_tfp_no_idiosyncratic_shocks, f)
-
-print '... done long drift without idiosyncratic shocks'
-save_plot_data(data_long_drift_low_tfp_no_idiosyncratic_shocks,'plot_data_long_drift_low_tfp_no_idiosyncratic_shocks.pickle')
+#==============================================================================
+# 
+# #simulate all low shocks
+# v.execute('approximate.shock = -1.')
+# v.execute('np.random.set_state(state)')
+# Gamma,Y,Shocks,y = {},{},{},{}
+# Gamma[0] = Gamma0
+# simulate.simulate(Para,Gamma,Y,Shocks,y,T_long_drift)
+# data_long_drift_low_tfp_no_idiosyncratic_shocks= Y,y
+# with open('data_long_drift_low_tfp_no_idiosyncratic_shocks.pickle', 'wb') as f:
+#     pickle.dump(data_long_drift_low_tfp_no_idiosyncratic_shocks, f)
+# 
+# print '... done long drift without idiosyncratic shocks'
+# save_plot_data(data_long_drift_low_tfp_no_idiosyncratic_shocks,'plot_data_long_drift_low_tfp_no_idiosyncratic_shocks.pickle')
+#==============================================================================
 
 
 

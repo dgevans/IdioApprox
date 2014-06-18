@@ -27,86 +27,14 @@ listofdatafiles=[
 'long_sample_with_agg_shock'
 ]
 
-truncation=.99
+
 for name in listofdatafiles:
     print name
-    name_of_file='/home/anmol/IdioApprox/data_bond_economy/'+'data'+'_'+name+'.pickle'    
+    name_of_file='/home/anmol/IdioApprox/plot_'+'data'+'_'+name+'.pickle'    
     data = pickle.load( open( name_of_file, "rb" ) )    
     copy_command='cp *.png /home/anmol/IdioApprox/Graphs/'+ name+ '/'
-    
-    Y,y=data
-    indx_y,indx_Y,indx_Gamma=Para.indx_y,Para.indx_Y,Para.indx_Gamma
-    T=len(Y)
-    N=np.shape(y[0])[0]
-    mu,output,g,assets,bar_g,simulation_data={},{},{},{},{},{}
-    for t in range(T-1):
-        output[t]=np.atleast_2d(y[t][:,indx_y['l']]*np.exp(y[t][:,indx_y['wages']])).reshape(N,1)
-        mu[t]=np.exp(y[t][:,indx_y['logm']])*(y[t][:,indx_y['muhat']])
-        #g[t]=(1-mu[t]*(1+Para.gamma))*((y[t][:,indx_y['c']])**(-Para.sigma))
-        #bar_g[t]=np.mean(g[t])    
-        #g[t]=g[t]/bar_g[t]    
-        #g[t]=np.atleast_2d(g[t]).reshape(N,1)
-        #if t==0:
-        #   assets[t]=y[t][:,indx_y['x_']]*(1/np.exp(Gamma[t][:,indx_Gamma['m_']]))
-        #else:
-        #   assets[t]=y[t][:,indx_y['x_']]*(Y[t-1][indx_Y['alpha2']]/np.exp(Gamma[t][:,indx_Gamma['m_']]))    
-           
-    
-        #assets[t]=np.atleast_2d(assets[t]).reshape(N,1)    
-        #simulation_data[t]=np.hstack((output[t],g[t],assets[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
-        #simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t],np.atleast_2d(Shocks[t]).reshape(N,1)))
-        simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t]))
-        simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t]))
-        panel_data=pd.Panel(simulation_data,minor_axis=['y','mu','logm','muhat','e','c' ,'l','rho1_','rho2','phi','wages','UcP','a','x_','kappa_'])
-    
-    #panel_data.to_pickle('simulation_data.dat')
-    
-    def get_quantiles(var):
-        var_data=panel_data.minor_xs(var)
-        low_q=var_data.quantile(.10,axis=0)
-        m_q=var_data.quantile(.5,axis=0)
-        high_q=var_data.quantile(.9,axis=0)    
-        plt.plot(np.array([low_q,m_q,high_q]).T)
-        return low_q,m_q,high_q
-    
-    
-    def get_cov(var_1,var_2):
-        cov_data= map(lambda t: np.corrcoef(panel_data.minor_xs(var_1)[t][panel_data.minor_xs(var_1)[t]<panel_data.minor_xs(var_1)[t].quantile(truncation)],panel_data.minor_xs(var_2)[t][panel_data.minor_xs(var_2)[t]<panel_data.minor_xs(var_2)[t].quantile(truncation)])[0,1],range(T-1))
+    Y,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt=data
         
-        return cov_data
-    
-
-    
-    def get_var(variable):
-        var_data= map(lambda t:  np.std(panel_data.minor_xs(variable)[t][panel_data.minor_xs(variable)[t]<panel_data.minor_xs(variable)[t].quantile(truncation)])/(np.mean(panel_data.minor_xs(variable)[t][panel_data.minor_xs(variable)[t]<panel_data.minor_xs(variable)[t].quantile(truncation)])),range(T-1))
-        
-        return var_data    
-    
-    
-    
-    def get_scatter(var_1,var_2,t):
-        plt.scatter(panel_data.minor_xs(var_1)[t],panel_data.minor_xs(var_2)[t])
-        
-        
-    
-    
-    def plot_agg_var(var): 
-        time_series_data=map(lambda t: Y[t][indx_Y[var]],range(T-1))    
-        plt.plot(time_series_data,'k')
-        return time_series_data
-        
-    
-    
-    
-    low_q_c,m_q_c,high_q_c=get_quantiles('c')
-    
-    
-    low_q_y,m_q_y,high_q_y=get_quantiles('y')
-    
-    low_q_l,m_q_l,high_q_l=get_quantiles('l')
-    
-    low_q_a,m_q_a,high_q_a=get_quantiles('a')
-    
     
     plt.close('all')
     f,((ax1,ax2),(ax3,ax4)) =plt.subplots(2,2,sharex='col')
@@ -153,7 +81,7 @@ for name in listofdatafiles:
     
     
     plt.figure()
-    plot_agg_var('taxes')
+    plt.plot(map(lambda t: Y[t][Para.indx_Y['taxes']],range(len(Y)-1)),'k')
     plt.title('Tax rates')
     plt.xlabel('t')
     plt.ylabel(r'$\tau$')
@@ -165,7 +93,7 @@ for name in listofdatafiles:
     
     
     plt.figure()
-    plot_agg_var('T')
+    plt.plot(map(lambda t: Y[t][Para.indx_Y['T']],range(len(Y)-1)),'k')
     plt.title('Transfers')
     plt.xlabel('t')
     plt.ylabel(r'$T$')
@@ -176,7 +104,7 @@ for name in listofdatafiles:
     
     
     plt.figure()
-    plt.plot(sum(panel_data.minor_xs('a')),'k')
+    plt.plot(debt,'k')
     plt.title('Debt')
     plt.xlabel('t')
     plt.ylabel(r'$-B_t$')
@@ -186,11 +114,6 @@ for name in listofdatafiles:
     plt.savefig('Debt.png',dpi=300)
     
     
-    
-    cov_data_c_y=get_cov('c','y')
-    cov_data_a_y=get_cov('a','y')
-    cov_data_a_c=get_cov('a','c')
-    cov_data_l_c=get_cov('l','c')
     
     
     f,((ax1,ax2),(ax3,ax4)) =plt.subplots(2,2,sharex='col')
@@ -216,17 +139,13 @@ for name in listofdatafiles:
     
     
     
-    cov_data_c_c=get_var('c')
-    cov_data_a_a=get_var('a')
-    cov_data_l_l=get_var('l')
-    cov_data_y_y=get_var('y')
     
     
     f,((ax1,ax2),(ax3,ax4)) =plt.subplots(2,2,sharex='col')
-    lines_cov_c_c=ax1.plot(cov_data_c_c)
-    lines_cov_a_a=ax2.plot(cov_data_a_a)
-    lines_cov_l_l=ax3.plot(cov_data_l_l)
-    lines_cov_y_y=ax4.plot(cov_data_y_y)
+    lines_cov_c_c=ax1.plot(var_data_c)
+    lines_cov_a_a=ax2.plot(var_data_a)
+    lines_cov_l_l=ax3.plot(var_data_l)
+    lines_cov_y_y=ax4.plot(var_data_y)
     
     plt.setp(lines_cov_c_c,color='k')
     plt.setp(lines_cov_a_a,color='k')

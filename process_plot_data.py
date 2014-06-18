@@ -58,7 +58,7 @@ def get_quantiles(var,panel_data):
     
     
 def get_cov(var_1,var_2,panel_data):
-        T=len(panel_data)            
+        T=np.shape(panel_data)[0]            
 
         cov_data= map(lambda t: np.corrcoef(panel_data.minor_xs(var_1)[t][panel_data.minor_xs(var_1)[t]<panel_data.minor_xs(var_1)[t].quantile(truncation)],panel_data.minor_xs(var_2)[t][panel_data.minor_xs(var_2)[t]<panel_data.minor_xs(var_2)[t].quantile(truncation)])[0,1],range(T-1))
         
@@ -67,7 +67,7 @@ def get_cov(var_1,var_2,panel_data):
 
     
 def get_var(variable,panel_data):
-        T=len(panel_data)
+        T=np.shape(panel_data)[0]
 
         var_data= map(lambda t:  np.std(panel_data.minor_xs(variable)[t][panel_data.minor_xs(variable)[t]<panel_data.minor_xs(variable)[t].quantile(truncation)])/(np.mean(panel_data.minor_xs(variable)[t][panel_data.minor_xs(variable)[t]<panel_data.minor_xs(variable)[t].quantile(truncation)])),range(T-1))
         
@@ -103,9 +103,20 @@ def save_plot_data(data,nameoffile):
     var_data_a=get_var('a',panel_data)
     var_data_l=get_var('l',panel_data)
     var_data_y=get_var('y',panel_data)
-    
+    debt=np.array(sum(panel_data.minor_xs('a')))
+    print debt
     
     store_data=Y,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y
     
     with open(nameoffile, 'wb') as f:
         pickle.dump(store_data, f)
+    
+    debtfilename='debt'+nameoffile
+
+    with open(debtfilename, 'wb') as f:
+        pickle.dump(np.array(sum(panel_data.minor_xs('a'))), f)
+
+
+    with open(debtfilename, 'wb') as f:
+        pickle.dump(debt, f)
+

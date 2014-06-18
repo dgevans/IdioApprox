@@ -23,7 +23,7 @@ listofdatafiles=[
 
 for name in listofdatafiles:
     print name
-    name_of_file='/home/anmol/IdioApprox/plot_'+'data'+'_'+name+'.pickle'    
+    name_of_file='/home/anmol/IdioApprox/plot_data/plot_'+'data'+'_'+name+'.pickle'    
     data = pickle.load( open( name_of_file, "rb" ) )    
     copy_command='cp *.png /home/anmol/IdioApprox/Graphs/'+ name+ '/'
     Y,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt=data
@@ -162,9 +162,9 @@ for name in listofdatafiles:
     
 # Longsample with and without  aggregate risk
     
-plot_data_long_sample_no_agg_shock=pickle.load(open('plot_data_long_sample_no_agg_shock.pickle'))
+plot_data_long_sample_no_agg_shock=pickle.load(open('plot_data/plot_data_long_sample_no_agg_shock.pickle'))
 Y_long_sample_no_agg_shock,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt_long_sample_no_agg_shock=plot_data_long_sample_no_agg_shock
-plot_data_long_sample_with_agg_shock=pickle.load(open('plot_data_long_sample_with_agg_shock.pickle'))
+plot_data_long_sample_with_agg_shock=pickle.load(open('plot_data/plot_data_long_sample_with_agg_shock.pickle'))
 Y_long_sample_with_agg_shock,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt_long_sample_with_agg_shock=plot_data_long_sample_with_agg_shock
 
 f,(ax1,ax2,ax3) =plt.subplots(3,1,sharex='col')
@@ -196,15 +196,15 @@ plt.savefig('policy_long_sample.png',dpi=300)
 
 # Drift with and without idiosyncratic risk
     
-plot_data_long_drift_high_shocks=pickle.load(open('plot_data_long_drift_high_shocks.pickle'))
+plot_data_long_drift_high_shocks=pickle.load(open('plot_data/plot_data_long_drift_high_shocks.pickle'))
 Y_long_drift_high_shocks,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt_long_drift_high_shocks=plot_data_long_drift_high_shocks
 
-plot_data_long_drift_high_tfp_no_idiosyncratic_shocks=pickle.load(open('plot_data_long_drift_high_tfp_no_idiosyncratic_shocks.pickle'))
+plot_data_long_drift_high_tfp_no_idiosyncratic_shocks=pickle.load(open('plot_data/plot_data_long_drift_high_tfp_no_idiosyncratic_shocks.pickle'))
 Y_long_drift_high_tfp_no_idiosyncratic_shocks,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt_long_drift_high_tfp_no_idiosyncratic_shocks=plot_data_long_drift_high_tfp_no_idiosyncratic_shocks
 
 f,(ax1,ax2,ax3) =plt.subplots(3,1,sharex='col')
-lines_taxes=ax1.plot(np.array([map(lambda t: Y_long_drift_high_tfp_no_idiosyncratic_shocks[t][Para.indx_Y['taxes']],range(len(Y)-1)),map(lambda t: Y_long_drift_high_shocks[t][Para.indx_Y['taxes']],range(len(Y)-1))]).T)
-lines_transfers=ax2.plot(np.array([map(lambda t: Y_long_drift_high_tfp_no_idiosyncratic_shocks[t][Para.indx_Y['T']],range(len(Y)-1)),map(lambda t: Y_long_drift_high_shocks[t][Para.indx_Y['T']],range(len(Y)-1))]).T)
+lines_taxes=ax1.plot(np.array([map(lambda t: Y_long_drift_high_tfp_no_idiosyncratic_shocks[t][Para.indx_Y['taxes']],range(len(Y_long_drift_high_tfp_no_idiosyncratic_shocks)-1)),map(lambda t: Y_long_drift_high_shocks[t][Para.indx_Y['taxes']],range(len(Y_long_drift_high_tfp_no_idiosyncratic_shocks)-1))]).T)
+lines_transfers=ax2.plot(np.array([map(lambda t: Y_long_drift_high_tfp_no_idiosyncratic_shocks[t][Para.indx_Y['T']],range(len(Y_long_drift_high_tfp_no_idiosyncratic_shocks)-1)),map(lambda t: Y_long_drift_high_shocks[t][Para.indx_Y['T']],range(len(Y_long_drift_high_tfp_no_idiosyncratic_shocks)-1))]).T)
 lines_debt=ax3. plot(np.array([debt_long_drift_high_tfp_no_idiosyncratic_shocks,debt_long_drift_high_shocks]).T)
 
     
@@ -231,9 +231,9 @@ plt.savefig('policy_drfits.png',dpi=300)
 
 # IRFS with and without idiosyncratic risk
     
-plot_data_irf_high_tfp_no_idiosyncratic_shocks=pickle.load(open('plot_data_irf_high_tfp_no_idiosyncratic_shocks.pickle'))
+plot_data_irf_high_tfp_no_idiosyncratic_shocks=pickle.load(open('plot_data/plot_data_irf_high_tfp_no_idiosyncratic_shocks.pickle'))
 Y_irf_high_tfp_no_idiosyncratic_shocks,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt_irf_high_tfp_no_idiosyncratic_shocks=plot_data_irf_high_tfp_no_idiosyncratic_shocks
-plot_data_irf_high_tfp_with_idiosyncratic_shocks=pickle.load(open('plot_data_irf_high_tfp_with_idiosyncratic_shocks.pickle'))
+plot_data_irf_high_tfp_with_idiosyncratic_shocks=pickle.load(open('plot_data/plot_data_irf_high_tfp_with_idiosyncratic_shocks.pickle'))
 Y_irf_high_tfp_with_idiosyncratic_shocks,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt_irf_high_tfp_with_idiosyncratic_shocks=plot_data_irf_high_tfp_with_idiosyncratic_shocks
 
 f,(ax1,ax2,ax3) =plt.subplots(3,1,sharex='col')

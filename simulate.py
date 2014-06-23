@@ -53,7 +53,7 @@ def update_state_parallel(Para,Gamma,quadratic = True):
     v['Gamma'] = Gamma
     v.execute('approx = approximate.approximate(Gamma)')
     approx = Reference('approx')
-    diff = 100.
+    diff = np.inf
     n = 0.
     while diff > 0.001 and n < 1:
         Gamma_new_t,Y_t,Shocks_t,y_t = filter(None,v.apply(lambda approx,quadratic = quadratic: approx.iterate(quadratic),approx))[0]

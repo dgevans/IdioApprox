@@ -79,8 +79,8 @@ Para = None
 
 shock = None
 
-logm_min = -3.
-muhat_min = -100.
+logm_min = -2.
+muhat_min = -np.inf
 
 y,e,Y,z,v,eps,Eps,p,S,sigma,sigma_E = [None]*11
 #interpolate = utilities.interpolator_factory([3])
@@ -145,7 +145,7 @@ class approximate(object):
         self.quadratic()
         self.join_function()
         
-    def approximate_Gamma(self,k=150):
+    def approximate_Gamma(self,k=500):
         '''
         Approximate the Gamma distribution
         '''
@@ -625,7 +625,7 @@ class approximate(object):
             r = np.random.randn(neps)
             for i in range(neps):
                 if z_i[0] > logm_min and z_i[1] > muhat_min:
-                    r[i] = min(3.,max(-3.,r[i]))
+                    r[i] = min(5.,max(-5.,r[i]))
                 else:
                     r[i] = min(1.,max(logm_min-z_i[0]+0.1,(muhat_min-z_i[1])/10. +0.1))
             e = r*sigma

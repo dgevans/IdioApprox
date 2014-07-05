@@ -1,13 +1,13 @@
 import simulate
-import calibrate_begs_id_nu_ces as Para
+import calibrate_begs_id_nu_ghh as Para
 import numpy as np
 import cPickle as pickle
 import pandas as pd
 import os as os
 
 
-N=10000
-T_init=125
+N=30000
+T_init=10
 T_long=100
 T_long_drift=30
 T_imp=5
@@ -35,7 +35,7 @@ def get_panel_data(data):
         mu[t]=np.exp(y[t][:,indx_y['logm']])*(y[t][:,indx_y['muhat']])
         simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t]))
         simulation_data[t]=np.hstack((output[t],np.atleast_2d(mu[t]).reshape(N,1),y[t]))
-        panel_data=pd.Panel(simulation_data,minor_axis=['y','mu','logm','muhat','e','c' ,'l','rho1_','rho2','phi','wages','UcP','a','x_','kappa_'])
+        panel_data=pd.Panel(simulation_data,minor_axis=['y','mu','logm','muhat','e','c' ,'l','rho1_','rho2','phi','wages','UcP','a','I','x_','kappa_'])
     return panel_data
 
     
@@ -107,15 +107,55 @@ def save_plot_data(data,nameoffile):
 # INITIAL DISTRIBUTION FOR EXERCISES
 
 print 'begin initiliazation'
+import steadystate
+from scipy.optimize import root
+steadystate.calibrate(Para)
+steadystate.Finv = Para.time0Finv
+steadystate.GSS = Para.time0GSS
+ 
+#match  moments
+ 
+def f(z):
+    mu = z[:2]
+    Sigma = np.array([[z[2],z[3]],[z[3],z[4]]])
+    Sig = np.diag(Sigma)
+    mu_y,mu_a = np.exp(mu + 0.5*Sig)
+    Sigma2 = np.exp(mu+mu.reshape(-1,1) + 0.5*(Sig+Sig.reshape(-1,1)))*(np.exp(Sigma)-1)
+    sig_y = np.sqrt(Sigma2[0,0])
+    sig_a = np.sqrt(Sigma2[1,1])
+    corr_ya = Sigma2[0,1]/(sig_y*sig_a)
+    return np.array([mu_y,mu_a,sig_y/mu_y,sig_a/mu_a,corr_ya]) - np.array([1.,5.,2.65,6.53,0.5])
+     
+z = root(f,np.array([1.,1,1.,0.,1.])).x
+mu = z[:2]
+Sigma = np.array([[z[2],z[3]],[z[3],z[4]]])
+Gamma_ya = np.exp(np.random.multivariate_normal(mu,Sigma,N))
+beta,sigma,gamma,psi = Para.beta,Para.sigma,Para.gamma,Para.psi
+T,tau = 0.2,0.3
+y,a = Gamma_ya.T
+c = (1-beta)*a/beta + T + (1-tau)*y
 
+l = (psi*(1-tau)*y)**(1/(1+gamma))
+e = np.log(y/l)
+chat = c-psi*l**(1+gamma)/(1+gamma)
+Uc = chat**(-sigma)
+
+logm = -np.log(Uc)
+logm -= logm.mean()
+Gamma0= np.vstack([logm,e]).T
+
+
+        
+ss = steadystate.steadystate(Gamma0.T)
 
 Gamma,Y,Shocks,y = {},{},{},{}
-Gamma[0] = np.zeros((N,3)) 
-Gamma[0][:,0] = np.zeros(N)
+Gamma[0] = ss.get_y(ss.z_i)[:3,:].T
+ 
+
 
 v = simulate.v
 v.execute('import numpy as np')
-v.execute('import calibrate_begs_id_nu_ces as Para')
+v.execute('import calibrate_begs_id_nu_ghh as Para')
 v.execute('import approximate_begs as approximate')
 
 v.execute('old_shock_status=approximate.shock ')
@@ -336,5 +376,5 @@ save_plot_data(data_long_drift_high_tfp_no_idiosyncratic_shocks,'plot_data_long_
 #==============================================================================
 
 
-
-os.system('tar cvzf plot_data.tar.gz plot*.pickle')
+os.system('mv *.pickle plot_data/')
+execfile('plot_simulations.py')

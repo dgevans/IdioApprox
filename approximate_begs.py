@@ -79,7 +79,7 @@ Para = None
 
 shock = None
 
-logm_min = -2.
+logm_min = -np.inf
 muhat_min = -np.inf
 
 y,e,Y,z,v,eps,Eps,p,S,sigma,sigma_E = [None]*11
@@ -145,7 +145,7 @@ class approximate(object):
         self.quadratic()
         self.join_function()
         
-    def approximate_Gamma(self,k=500):
+    def approximate_Gamma(self,k=1200):
         '''
         Approximate the Gamma distribution
         '''
@@ -184,7 +184,7 @@ class approximate(object):
         ebar = f(ybar)
         
         return np.hstack((
-        ybar,ebar,Ybar,ybar[:nz],Ivy.dot(ybar),1.,np.zeros(neps),0.
+        ybar,ebar,Ybar,ybar[:nz],Ivy.dot(ybar),np.ones(n_p),np.zeros(neps),0.
         ))
         
     def compute_dy(self):

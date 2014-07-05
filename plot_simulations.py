@@ -5,7 +5,7 @@ Created on Sat Apr 19 19:49:53 2014
 @author: dgevans
 """
 
-import calibrate_begs_id_nu_ces as Para
+import calibrate_begs_id_nu_ghh as Para
 import numpy as np
 import matplotlib.pyplot as plt
 import cPickle as pickle
@@ -23,9 +23,9 @@ listofdatafiles=[
 
 for name in listofdatafiles:
     print name
-    name_of_file='/home/anmol/IdioApprox/plot_data_procyclic_payoffs/plot_'+'data'+'_'+name+'.pickle'    
+    name_of_file='plot_data/plot_'+'data'+'_'+name+'.pickle'    
     data = pickle.load( open( name_of_file, "rb" ) )    
-    copy_command='cp *.png /home/anmol/IdioApprox/Graphs/'+ name+ '/'
+    copy_command='cp *.png Graphs/'+ name+ '/'
     Y,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt=data
         
     
@@ -231,7 +231,7 @@ plt.savefig('policy_drfits.png',dpi=300)
 
 # IRFS with and without idiosyncratic risk
     
-plot_data_irf_high_tfp_no_idiosyncratic_shocks=pickle.load(open('plot_data_procyclic_payoffs/plot_data_irf_high_tfp_no_idiosyncratic_shocks.pickle'))
+plot_data_irf_high_tfp_no_idiosyncratic_shocks=pickle.load(open('plot_data/plot_data_irf_high_tfp_no_idiosyncratic_shocks.pickle'))
 Y_irf_high_tfp_no_idiosyncratic_shocks,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt_irf_high_tfp_no_idiosyncratic_shocks=plot_data_irf_high_tfp_no_idiosyncratic_shocks
 plot_data_irf_high_tfp_with_idiosyncratic_shocks=pickle.load(open('plot_data/plot_data_irf_high_tfp_with_idiosyncratic_shocks.pickle'))
 Y_irf_high_tfp_with_idiosyncratic_shocks,low_q_c,m_q_c,high_q_c,low_q_y,m_q_y,high_q_y,low_q_l,m_q_l,high_q_l,low_q_a,m_q_a,high_q_a,cov_data_c_y,cov_data_a_y,cov_data_a_c,cov_data_l_c,var_data_c,var_data_a,var_data_l,var_data_y,debt_irf_high_tfp_with_idiosyncratic_shocks=plot_data_irf_high_tfp_with_idiosyncratic_shocks

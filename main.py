@@ -5,11 +5,11 @@ Created on Sat Apr 19 19:49:53 2014
 @author: dgevans
 """
 import steadystate
-import calibrate_begs_id_nu_ghh as Para
+import calibrate_begs_id_nu_ces as Para
 from scipy.optimize import root
 import numpy as np
 
-N = 10000
+N = 100000
 
 steadystate.calibrate(Para)
 steadystate.Finv = Para.time0Finv
@@ -36,11 +36,11 @@ beta,sigma,gamma,psi = Para.beta,Para.sigma,Para.gamma,Para.psi
 T,tau = 0.2,0.3
 y,a = Gamma_ya.T
 c = (1-beta)*a/beta + T + (1-tau)*y
-
-l = (psi*(1-tau)*y)**(1/(1+gamma))
+Uc = c**(-sigma)
+l = (Uc*(1-tau)*y/psi)**(1/(1+gamma))
 e = np.log(y/l)
-chat = c-psi*l**(1+gamma)/(1+gamma)
-Uc = chat**(-sigma)
+#chat = c-psi*l**(1+gamma)/(1+gamma)
+#Uc = chat**(-sigma)
 
 logm = -np.log(Uc)
 logm -= logm.mean()
@@ -55,11 +55,23 @@ Gamma[0] = ss.get_y(ss.z_i)[:3,:].T
 
 import simulate
 v = simulate.v
-v.execute('import calibrate_begs_id_nu_ghh as Para')
+v.execute('import calibrate_begs_id_nu_ces as Para')
 v.execute('import approximate_begs as approximate')
 v.execute('approximate.calibrate(Para)')
 v.execute('approximate.shock = 0.')
+v.execute('import numpy as np')
+v.execute('state = np.random.get_state()')
+simulate.simulate(Para,Gamma,Y,Shocks,y,300) #simulate 150 period with no aggregate shocks
+v.execute('np.random.set_state(state)')
+data1 = Gamma,Y,Shocks,y
+Gamma,Y,Shocks,y = {},{},{},{}
+Gamma[0] = ss.get_y(ss.z_i)[:3,:].T
+v.execute('Para.phat[1] = 0.')
 simulate.simulate(Para,Gamma,Y,Shocks,y,100) #simulate 150 period with no aggregate shocks
+data2 = Gamma,Y,Shocks,y
+
+
+
 Gamma0 = Gamma[9]
 #Simulate all high shocks
 v.execute('approximate.shock = 1.')

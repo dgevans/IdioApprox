@@ -95,3 +95,33 @@ def update_state(Para,Gamma):
     return Para.nomalize(Gamma_new),Y,epsilon,y
     
     
+def simulate_aggstate(Para,Gamma,Z,Y,Shocks,y,T,T0=0,quadratic = True):
+    '''
+    Simulates a sequence of state path for a given Para
+    '''
+    approximate.calibrate(Para)
+    t = T0+1
+    while t< T:
+        print t
+        Gamma[t],Z[t],Y[t-1], Shocks[t-1],y[t-1]= update_state_parallel_aggstate(Para,Gamma[t-1],Z[t-1],quadratic)
+        t += 1
+    
+def update_state_parallel_aggstate(Para,Gamma,Z,quadratic = True):
+    '''
+    Updates the state using parallel code
+    '''
+    v.block = True
+    v['Gamma'] = Gamma
+    v['Z'] = Z
+    v.execute('approx = approximate.approximate(Gamma)')
+    diff = np.inf
+    n = 0.
+    while diff > 0.001 and n < 1:
+        v.execute('data = approx.iterate(Z)')
+        Gamma_new_t,ZNew_t,Y_t,Shocks_t,y_t = filter(None,v['data'])[0]
+        error = np.linalg.norm(np.mean(Gamma_new_t[:,:2],0))
+        if error < diff:
+            diff = error
+            Gamma_new,ZNew,Y,Shocks,y = Gamma_new_t,ZNew_t,Y_t,Shocks_t,y_t
+        n += 1
+    return Para.nomalize(Gamma_new.copy()),ZNew.copy(),Y.copy(),Shocks.copy(),y.copy()

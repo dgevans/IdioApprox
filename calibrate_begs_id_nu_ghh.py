@@ -8,7 +8,7 @@ import numpy as np
 
 beta = 0.95
 gamma = 1.
-sigma = 0.5
+sigma = 1.
 sigma_e = np.array([0.2,0.2])
 sigma_E = 0.03
 chi = 0.
@@ -29,7 +29,7 @@ nv = 2 # number of forward looking terms (x_t,rho1_t)
 n_p = 1 #number of parameters
 neps = len(sigma_e)
 
-phat = np.array([-0.001])
+phat = np.array([-0.01])
 
 indx_y={'logm':0,'muhat':1,'e':2,'c' :3,'l':4,'rho1_':5,'rho2':6,'phi':7,'wages':8,'UcP':9,'a':10,'I':11,'x_':12,'kappa_':13,'pers_shock':14,'trans_shock':15}
 indx_Y={'alpha1':0,'alpha2':1,'taxes':2,'eta':3,'lambda':4,'T':5,'shock':6}

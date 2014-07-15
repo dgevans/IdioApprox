@@ -44,8 +44,8 @@ class steadystate(object):
         res = root(self.SteadyStateRes,0.5*np.ones(nY))
         if not res.success:
             res = root(self.SteadyStateRes,Y0)
-        if not res.success:
-            raise Exception('Could not find steady state')
+        while not res.success:
+            res = root(self.SteadyStateRes,np.random.rand(nY))
         Y0 = res.x
         self.Y = res.x
         

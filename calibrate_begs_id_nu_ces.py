@@ -15,6 +15,7 @@ sigma_E = 0.03
 chi = 0.
 mu_e = 0.7
 psi = 10.
+Gov = 0.17
 
 ll = np.array([-np.inf,-np.inf,-np.inf])
 ul = np.array([np.inf,np.inf,np.inf])
@@ -106,7 +107,7 @@ def G(w):
     ret[1] = muhat # muhat must integrate to zero for all Eps
     
     ret[2] = 0 - logm #normalizing for Em=1
-    ret[3] = c + 0.17 - w_e * l # resources
+    ret[3] = c + Gov - w_e * l # resources
     ret[4] = phi*Uc*w_e
     ret[5] = rho2    
     
@@ -184,7 +185,7 @@ def GSS(YSS,y_i):
     Uc = c**(-sigma)
     
     return np.hstack((
-    alpha1-alpha2, np.mean(c-l*w_e),eta,np.mean(phi*Uc*w_e),np.mean(rho1),T    
+    alpha1-alpha2, np.mean(c+Gov-l*w_e),eta,np.mean(phi*Uc*w_e),np.mean(rho1),T    
     ))
     
 def time0Finv(YSS,z):
@@ -233,7 +234,7 @@ def time0GSS(YSS,y_i):
     Uc = c**(-sigma)
     
     return np.hstack((
-    alpha1-alpha2, np.mean(c-l*w_e),eta,np.mean(phi*Uc*w_e),np.mean(muhat),T   
+    alpha1-alpha2, np.mean(c+Gov-l*w_e),eta,np.mean(phi*Uc*w_e),np.mean(muhat),T   
     ))
     
 def nomalize(Gamma,weights =None):

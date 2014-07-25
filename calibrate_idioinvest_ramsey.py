@@ -14,7 +14,7 @@ sigma_e = np.array([0.01,0.1])
 sigma_E = 0.03
 mu_e = 0.
 psi = 10.
-delta = 0.05
+delta = 0.03
 xi_l = 0.7 *.7
 xi_k = 0.3 *.7
 
@@ -33,7 +33,7 @@ n_p = 1 #number of parameters
 nZ = 1 # number of aggregate states
 neps = len(sigma_e)
 
-phat = np.array([-0.005])
+phat = np.array([-0.01])
 
 indx_y={'logm':0,'muhat':1,'e':2,'c' :3,'l':4,'rho1_':5,'rho2':6,'phi':7,'wages':8,'UcP':9,'a':10,'x_':11,'kappa_':12,'pers_shock':13,'trans_shock':14}
 indx_Y={'alpha1':0,'alpha2':1,'taxes':2,'eta':3,'lambda':4,'T':5,'shock':6}
@@ -44,13 +44,13 @@ def F(w):
     '''
     Individual first order conditions
     '''
-    logm,muhat,a,c,l,k_,nl,r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2_,rho3_,foc_m_,kappa_,temp1_,temp2_ = w[:ny] #y
+    logm,muhat,a,logc,logl,logk_,lognl,r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2_,rho3_,foc_m_,kappa_,temp1_,temp2_ = w[:ny] #y
     EUc,EUc_r,Ex_,Ek_,EUc_mu,Erho2_,Erho3_,Efoc_k,Etemp1_,Etemp2_ = w[ny:ny+ne] #e
-    K,Alpha1_,Alpha2_,W,tau_l,tau_k,Xi,Eta,Kappa_,Iota = w[ny+ne:ny+ne+nY] #Y
+    logK,Alpha1_,Alpha2_,W,tau_l,tau_k,Xi,Eta,Kappa_,Iota = w[ny+ne:ny+ne+nY] #Y
     logm_,muhat_,a_= w[ny+ne+nY:ny+ne+nY+nz] #z
     x,alpha1,rho2,rho3,foc_m,kappa,temp1,temp2 = w[ny+ne+nY+nz:ny+ne+nY+nz+nv] #v
     nu = w[ny+ne+nY+nz+nv+n_p-1] #v
-    K_ = w[ny+ne+nY+nz+nv+n_p+nZ-1] #Z
+    logK_ = w[ny+ne+nY+nz+nv+n_p+nZ-1] #Z
     eps_p,eps_t = w[ny+ne+nY+nz+nv+n_p+nZ:ny+ne+nY+nz+nv+n_p+nZ+neps] #shock
     Eps = w[ny+ne+nY+nz+nv+n_p+nZ+neps] #aggregate shock
     
@@ -61,6 +61,8 @@ def F(w):
     shock = 1.
     m_,m = np.exp(logm_),np.exp(logm)
     mu_,mu = muhat_*m_,muhat*m
+    K,K_= np.exp(logK),np.exp(logK_)
+    c,l,k_,nl = np.exp(logc),np.exp(logl),np.exp(logk_),np.exp(lognl)
     
     Uc = c**(-sigma)
     Ucc = -sigma*c**(-sigma-1)
@@ -115,16 +117,17 @@ def G(w):
     '''
     Aggregate equations
     '''
-    logm,muhat,a,c,l,k_,nl,r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2_,rho3_,foc_m_,kappa_,temp1_,temp2_ = w[:ny] #y
+    logm,muhat,a,logc,logl,logk_,lognl,r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2_,rho3_,foc_m_,kappa_,temp1_,temp2_ = w[:ny] #y
     logm_,muhat_,a_= w[ny+ne+nY:ny+ne+nY+nz] #z
-    K,Alpha1_,Alpha2_,W,tau_l,tau_k,Xi,Eta,Kappa_,Iota = w[ny+ne:ny+ne+nY] #Y
-    K_ = w[ny+ne+nY+nz+nv+n_p+nZ-1] #Z
+    logK,Alpha1_,Alpha2_,W,tau_l,tau_k,Xi,Eta,Kappa_,Iota = w[ny+ne:ny+ne+nY] #Y
+    logK_ = w[ny+ne+nY+nz+nv+n_p+nZ-1] #Z
     Eps = w[ny+ne+nY+nz+nv+n_p+nZ+neps] #aggregate shock
     
+    c,l,k_,nl = np.exp(logc),np.exp(logl),np.exp(logk_),np.exp(lognl)
     m_,m = np.exp(logm_),np.exp(logm)
     mu_,mu =muhat_*m_,muhat*m
     Uc = c**(-sigma)
-    
+    K,K_= np.exp(logK),np.exp(logK_)
  
     
     ret = np.empty(nY+nG,dtype=w.dtype)
@@ -148,9 +151,9 @@ def f(y):
     '''
     Expectational equations that define e=Ef(y)
     '''
-    logm,muhat,a,c,l,k_,nl,r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2_,rho3_,foc_m_,kappa_,temp1_,temp2_ = y #y
+    logm,muhat,a,logc,logl,logk_,lognl,r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2_,rho3_,foc_m_,kappa_,temp1_,temp2_ = y #y
     
-        
+    c,l,k_,nl = np.exp(logc),np.exp(logl),np.exp(logk_),np.exp(lognl)
     m = np.exp(logm)
     mu = muhat*m
     Uc = c**(-sigma)
@@ -175,8 +178,9 @@ def Finv(YSS,z):
     Given steady state YSS solves for y_i
     '''
     logm,muhat,a = z
-    K,Alpha1_,Alpha2_,W,tau_l,tau_k,Xi,Eta,Kappa_,Iota = YSS
+    logK,Alpha1_,Alpha2_,W,tau_l,tau_k,Xi,Eta,Kappa_,Iota = YSS
     
+    K = np.exp(logK)
     m = np.exp(logm)
     mu = muhat*m
     
@@ -231,7 +235,7 @@ def Finv(YSS,z):
     foc_m_ = rho2*Uc + rho3 *(1-tau_k)*beta*Uc*r
     
     return np.vstack((
-    logm,muhat,a,c,l,k_,nl,r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2,rho3,foc_m_,kappa_,temp1_,temp2_   
+    logm,muhat,a,np.log(c),np.log(l),np.log(k_),np.log(nl),r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2,rho3,foc_m_,kappa_,temp1_,temp2_   
     ))
     
     
@@ -241,9 +245,11 @@ def GSS(YSS,y_i):
     '''
     Aggregate conditions for the steady state
     '''
-    logm,muhat,a,c,l,k_,nl,r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2,rho3,foc_m_,kappa_,temp1_,temp2_  = y_i
-    K,Alpha1_,Alpha2_,W,tau_l,tau_k,Xi,Eta,Kappa_,Iota = YSS
+    logm,muhat,a,logc,logl,logk_,lognl,r,pi,f,rho1,phi1,phi2,foc_k,foc_alpha1,alpha2_,foc_alpha2,foc_K,x_,alpha1_,rho2,rho3,foc_m_,kappa_,temp1_,temp2_  = y_i
+    logK,Alpha1_,Alpha2_,W,tau_l,tau_k,Xi,Eta,Kappa_,Iota = YSS
   
+    c,l,k_,nl = np.exp(logc),np.exp(logl),np.exp(logk_),np.exp(lognl)
+    K = np.exp(logK)
     m = np.exp(logm)
     mu = m*muhat
     Uc = c**(-sigma)    

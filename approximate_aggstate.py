@@ -149,7 +149,7 @@ class approximate(object):
         self.quadratic()
         self.join_function()
         
-    def approximate_Gamma(self,k=500):
+    def approximate_Gamma(self,k=1000):
         '''
         Approximate the Gamma distribution
         '''
@@ -281,7 +281,7 @@ class approximate(object):
             self.dZ_Z = dZ_Z
             return (dY_Z()[:nZ]-dZ_Z).flatten()
         
-        self.dZ_Z = root(residual,0.8*np.ones(1)).x
+        self.dZ_Z = root(residual,0.8*np.ones(1)).x.reshape(nZ,nZ)
         self.dY_Z = dY_Z()
 
         def compute_dy_Z(z_i):
@@ -437,9 +437,11 @@ class approximate(object):
         
         d[z,S],d[z,eps],d[z,Z] = np.hstack(( np.eye(nz), np.zeros((nz,nY)) )),np.zeros((nz,neps)),np.zeros((nz,nZ))
         
-        d[v,S],d[v,eps] = Ivy.dot(d[y,S]) + Ivy.dot(dy[Z](z_i)).dot(IZY).dot(d[Y,S]), Ivy.dot(dy[z](z_i)).dot(Izy).dot(dy[eps](z_i))
+        d[v,S],d[v,eps],d[v,Z] = Ivy.dot(d[y,S]) + Ivy.dot(dy[Z](z_i)).dot(IZY).dot(d[Y,S]), Ivy.dot(dy[z](z_i)).dot(Izy).dot(dy[eps](z_i)), Ivy.dot(dy[Z](z_i)).dot(self.dZ_Z)
         
-        d[eps,S],d[eps,eps] = np.zeros((neps,nz+nY)),np.eye(neps)       
+        d[eps,S],d[eps,eps],d[eps,Z] = np.zeros((neps,nz+nY)),np.eye(neps),np.zeros((neps,nZ))  
+        
+        d[Z,Z],d[Z,S] = np.eye(nZ),np.zeros((nZ,nY+nz))
 
         d[y,z] = d[y,S][:,:nz]
         
@@ -452,8 +454,8 @@ class approximate(object):
         '''
         self.HFhat = {}
         
-        for x1 in [S,eps]:
-            for x2 in [S,eps]:
+        for x1 in [S,eps,Z]:
+            for x2 in [S,eps,Z]:
                 
                 #Construct a function for each pair x1,x2
                 def HFhat_temp(z_i,x1=x1,x2=x2):
@@ -463,19 +465,108 @@ class approximate(object):
                     for y1 in [y,e,Y,z,v,eps]:
                         HFy1 = HF[:,y1,:]
                         for y2 in [y,e,Y,z,v,eps]:
-                            if x1.__hash__() == S.__hash__() and x2.__hash__() == S.__hash__():
-                                HFhat += quadratic_dot(HFy1[n:,:,y2],d[y1,x1],d[y2,x2])
-                            else:
+                            if x1.__hash__() == eps.__hash__() or x2.__hash__() == eps.__hash__():
                                 HFhat += quadratic_dot(HFy1[:-n,:,y2],d[y1,x1],d[y2,x2])
+                            else:
+                                HFhat += quadratic_dot(HFy1[n:,:,y2],d[y1,x1],d[y2,x2])
                     return HFhat
                     
                 self.HFhat[x1,x2] = dict_fun(HFhat_temp)
+                
+    def compute_d2y_ZZ(self):
+        '''
+        Copute the second derivative of y with respect to Z
+        '''
+        DF = self.DF
+        
+        def dy_YZZ(z_i):
+            DFi,df = DF(z_i)[n:],self.df(z_i)
+            temp = np.linalg.inv(DFi[:,y] + DFi[:,e].dot(df) + self.dZ_Z[0]**2 * DFi[:,v].dot(Ivy))
+            
+            return - temp.dot( DFi[:,Y] + DFi[:,v].dot(Ivy).dot(self.dy[Z](z_i)).dot(IZY) )
+            
+        dy_YZZ = dict_fun(dy_YZZ)
+        
+        def d2y_ZZ(z_i):
+            DFi,df,Hf = DF(z_i)[n:],self.df(z_i),self.Hf(z_i)
+            dy_Z = self.dy[Z](z_i)
+            temp = np.linalg.inv(DFi[:,y] + DFi[:,e].dot(df) + self.dZ_Z[0]**2 * DFi[:,v].dot(Ivy))
+            
+            return - np.tensordot(temp, self.HFhat[Z,Z](z_i) +np.tensordot(DFi[:,e],quadratic_dot(Hf,dy_Z,dy_Z),1),axes=1)
+        d2y_ZZ = dict_fun(d2y_ZZ)
+        
+        
+        def HGhat(z_i,y1,y2):
+            HG = self.HG(z_i)[nG:,:]
+            d = self.get_d(z_i)
+            HGhat = np.zeros((nY,len(y1),len(y2)))
+            for x1 in [y,z,Y,Z]:
+                HGx1 = HG[:,x1,:]
+                for x2 in [y,z,Y,Z]:
+                    HGhat += quadratic_dot(HGx1[:,:,x2],d[x1,y1],d[x2,y2])
+            return HGhat
+                    
+        HGhat_ZZ = dict_fun(lambda z_i : HGhat(z_i,Z,Z))
+        
+        
+        temp1 = np.linalg.inv(self.integrate(lambda z_i : self.DG(z_i)[nG:,y].dot(dy_YZZ(z_i)) + self.DG(z_i)[nG:,Y]))
+        temp2 = self.integrate(lambda z_i : np.tensordot(self.DG(z_i)[nG:,y],d2y_ZZ(z_i),1) + HGhat_ZZ(z_i))
+
+        
+        self.d2Y[Z,Z] = -np.tensordot(temp1,temp2,axes=1)
+        
+        self.d2y[Z,Z] = dict_fun(lambda z_i: d2y_ZZ(z_i) + np.tensordot(dy_YZZ(z_i),self.d2Y[Z,Z],axes=1) )
+        
+        #d2y_ZS
+        
+        def d2y_SZ(z_i):
+            DFi,df,Hf = DF(z_i)[n:],self.df(z_i),self.Hf(z_i)
+            d,d2y_ZZ = self.get_d(z_i),self.d2y[Z,Z](z_i)
+            temp = np.linalg.inv(DFi[:,y] + DFi[:,e].dot(df) + self.dZ_Z[0]*DFi[:,v].dot(Ivy))
+            return -np.tensordot(temp, self.HFhat[S,Z](z_i) 
+                                       + np.tensordot(DFi[:,e],quadratic_dot(Hf,d[y,S],d[y,Z]),1)
+                                       + np.tensordot(DFi[:,v].dot(Ivy), quadratic_dot(d2y_ZZ,IZY.dot(d[Y,S]),self.dZ_Z),1),1) 
+        d2y_SZ = dict_fun(d2y_SZ)
+        
+        def dy_YSZ(z_i):
+            DFi,df = DF(z_i)[n:],self.df(z_i)
+            temp = np.linalg.inv(DFi[:,y] + DFi[:,e].dot(df) + self.dZ_Z[0]*DFi[:,v].dot(Ivy))
+            return - temp.dot(DFi[:,Y] + DFi[:,v].dot(Ivy).dot(self.dy[Z](z_i)).dot(IZY) )
+            
+        dy_YSZ = dict_fun(dy_YSZ)
+        
+        HGhat_SZ = dict_fun(lambda z_i : HGhat(z_i,S,Z))
+        HGhat_YZ = self.integrate(lambda z_i : (HGhat_SZ(z_i) + np.tensordot(self.DG(z_i)[nG:,y],d2y_SZ(z_i),1))[:,nz:,:])
+        HGhat_zZ = lambda z_i : (HGhat_SZ(z_i) + np.tensordot(self.DG(z_i)[nG:,y],d2y_SZ(z_i),1))[:,:nz,:]
+        
+        temp1 = np.linalg.inv(self.integrate(lambda z_i : self.DG(z_i)[nG:,y].dot(dy_YSZ(z_i)) + self.DG(z_i)[nG:,Y]))
+        temp2 = self.integrate(lambda z_i : np.tensordot(self.DG(z_i)[nG:,y],d2y_SZ(z_i),1) + HGhat_SZ(z_i))
+        
+        def d2Y_zZ(z_i):
+            temp1 = np.linalg.inv(self.DG(z_i)[nG:,y].dot(dy_YSZ(z_i)) + self.DG(z_i)[nG:,Y])
+            temp2 = HGhat_zZ(z_i) + quadratic_dot(HGhat_YZ,self.dY(z_i),np.eye(nZ))
+            return - np.tensordot(temp1,temp2,1)
+            
+        self.d2Y[z,Z] = dict_fun(d2Y_zZ)
+        self.d2Y[Z,z] = lambda z_i : self.d2Y[z,Z](z_i).transpose(0,2,1)
+        self.d2y[S,Z] = d2y_SZ
+        self.dy[Y,S,Z] = dy_YSZ
+        self.d2y[Z,S] = lambda z_i : d2y_SZ(z_i).transpose(0,2,1)
+        
+        def d2y_Zeps(z_i):
+            DFi = DF(z_i)[:-n]
+            temp = np.linalg.inv(DFi[:,y] + DFi[:,v].dot(Ivy).dot(self.dy[z](z_i)).dot(Izy))
+            return -np.tensordot(temp, self.HFhat[Z,eps](z_i)
+                                       + np.tensordot(DFi[:,v].dot(Ivy), 
+                                       quadratic_dot(self.d2y[Z,S](z_i)[:,:,:nz],self.dZ_Z,Izy.dot(self.dy[eps](z_i))) ,1),1)
+        self.d2y[Z,eps] = dict_fun(d2y_Zeps)
+        self.d2y[eps,Z] = lambda z_i : self.d2y[Z,eps].transpose(0,2,1)
+        
              
     def compute_d2y(self):
         '''
         Computes second derivative of y
         '''
-        self.d2y = {}
         #DF,HF = self.DF(z_i),self.HF(z_i)
         #df,Hf = self.df(z_i),self.Hf(z_i)
         
@@ -489,8 +580,15 @@ class approximate(object):
             DFi = DF[n:]
             return np.tensordot(np.linalg.inv(DFi[:,y] + DFi[:,e].dot(df) + DFi[:,v].dot(Ivy)),
                 -self.HFhat[S,S](z_i) - np.tensordot(DFi[:,e],quadratic_dot(Hf,d[y,S],d[y,S]),1)
-                    , axes=1)
+                -np.tensordot(DFi[:,v].dot(Ivy),quadratic_dot(self.d2y[Z,Z](z_i),IZY.dot(d[Y,S]),IZY.dot(d[Y,S])),1)
+                , axes=1)
         self.d2y[S,S] = dict_fun(d2y_SS)
+        
+        def d2y_YSZ(z_i):
+            DFi,df = self.DF(z_i)[n:],self.df(z_i)
+            temp = np.linalg.inv(DFi[:,y] + DFi[:,e].dot(df) + DFi[:,v].dot(Ivy))
+            return - np.tensordot(temp, self.dy[Y,S,Z](z_i),1)
+        self.d2y[Y,S,Z] = dict_fun(d2y_YSZ)
         
         def d2y_Seps(z_i):
             DF = self.DF(z_i)
@@ -499,6 +597,7 @@ class approximate(object):
             dz_eps= Izy.dot(d[y,eps])
             return np.tensordot(np.linalg.inv(DFi[:,y] + DFi[:,v].dot(Ivy).dot(d[y,z]).dot(Izy)),
             -self.HFhat[S,eps](z_i) - np.tensordot(DFi[:,v].dot(Ivy), self.d2y[S,S](z_i)[:,:,:nz].dot(dz_eps),1)
+            -np.tensordot(DFi[:,v].dot(Ivy), quadratic_dot(self.d2y[Z,S](z_i)[:,:,:nz],IZY.dot(d[Y,S]),dz_eps),1)
             , axes=1)
             
         self.d2y[S,eps] = dict_fun(d2y_Seps)
@@ -520,15 +619,21 @@ class approximate(object):
         '''
         Computes the quadratic approximation
         '''
+        self.d2Y,self.d2y = {},{}
         self.get_d = dict_fun(self.get_df)
         self.compute_HFhat()
+        self.compute_d2y_ZZ()
         self.compute_d2y()        
         #Now d2Y
         DGhat_f = dict_fun(self.compute_DGhat)
+        def DGhat_zY(z_i):
+            DGi = self.DG(z_i)[nG:]
+            return  (DGhat_f(z_i)[:,:nz,nz:] 
+            + np.tensordot(DGi[:,y].dot(self.d2y[Y,S,Z](z_i)), quadratic_dot(self.d2Y[z,Z](z_i),np.eye(nz),IZY),1))
         self.DGhat = {}
         self.DGhat[z,z] = lambda z_i : DGhat_f(z_i)[:,:nz,:nz]
-        self.DGhat[z,Y] = lambda z_i : DGhat_f(z_i)[:,:nz,nz:]
-        self.DGhat[Y,z] = lambda z_i : DGhat_f(z_i)[:,nz:,:nz]
+        self.DGhat[z,Y] = dict_fun(DGhat_zY)
+        self.DGhat[Y,z] = lambda z_i : self.DGhat[z,Y](z_i).transpose(0,2,1)
         self.DGhat[Y,Y] = self.integrate(lambda z_i : DGhat_f(z_i)[:,nz:,nz:])
         self.compute_d2Y()
         self.compute_dsigma()
@@ -540,7 +645,6 @@ class approximate(object):
         Computes components of d2Y
         '''
         DGhat = self.DGhat
-        self.d2Y = {}
         #First z_i,z_i
         self.d2Y[z,z] = dict_fun(lambda z_i: np.tensordot(self.DGYinv, - DGhat[z,z](z_i),1))
             
@@ -678,6 +782,13 @@ class approximate(object):
             return (quadratic_dot(self.d2Y[z,z](zbar),zhat,zhat) + 2* quadratic_dot(self.d2Y[z,Y](zbar),zhat,Y1hat)).flatten()
         
         Y2hat = parallel_sum(Y2_int,Gamma_dist)/len(self.Gamma)
+        
+        def Y2_GZ_int(x):
+            z_i,zbar = x
+            zhat = z_i-zbar
+            return quadratic_dot(self.d2Y[z,Z](zbar),zhat,np.eye(nZ)).reshape(nY,nZ)
+        Y2hat_GZ =  parallel_sum(Y2_GZ_int,Gamma_dist)/len(self.Gamma)
+        
         def compute_ye(x):
             z_i,zbar = x
             zhat = z_i-zbar
@@ -693,7 +804,12 @@ class approximate(object):
                                 + self.dy[Z](zbar).dot(Zhat).flatten()
                                 + 0.5*quadratic*(quadratic_dot(self.d2y[eps,eps](zbar),e,e).flatten() + self.d2y[sigma](zbar).dot(sigma**2).flatten()
                                 +quadratic_dot(self.d2y[S,S](zbar),Shat,Shat) + 2*quadratic_dot(self.d2y[S,eps](zbar),Shat,e)
-                                +self.dy[Y](zbar).dot(Y2hat)                                
+                                +self.dy[Y](zbar).dot(Y2hat)      
+                                +2*quadratic_dot(self.d2y[Z,S](zbar),Zhat,Shat)
+                                +2*quadratic_dot(self.d2y[Z,eps](zbar),Zhat,e)
+                                +quadratic_dot(self.d2y[Z,Z](zbar),Zhat,Zhat)
+                                +2*self.dy[Y,S,Z](zbar).dot(Y2hat_GZ).dot(Zhat)
+                                +2*self.d2y[Y,S,Z](zbar).dot(Y2hat_GZ).dot(IZY).dot(Y1hat)
                                 ).flatten()
                                ,e))
         if rank == 0:    
@@ -703,7 +819,7 @@ class approximate(object):
             Ynew = (self.ss.get_Y() + Y1hat #+ self.dY_Eps.flatten() * E
                     + self.dY_p.dot(phat).flatten()
                     + self.dY_Z.dot(Zhat)
-                    + 0.5*quadratic*(self.d2Y[sigma].dot(sigma**2) + Y2hat).flatten() )
+                    + 0.5*quadratic*(self.d2Y[sigma].dot(sigma**2) + Y2hat + 2*Y2hat_GZ.dot(Zhat)).flatten() )
             Znew = Ynew[:nZ]
             return Gamma,Znew,Ynew,epsilon,y
         else:

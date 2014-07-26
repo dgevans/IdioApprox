@@ -58,9 +58,12 @@ def parallel_sum(f,X):
     sums = comm.gather(my_sum)
     if rank == 0:
         res = sum(sums)
+        comm.bcast(res.shape)
     else:
-        res = None
-    return comm.bcast(res)
+        shape = comm.bcast(None)
+        res = np.empty(shape)
+    comm.Bcast([res,MPI.FLOAT])
+    return res
     
 def parallel_dict_map(F,l):
     '''

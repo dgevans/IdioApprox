@@ -241,7 +241,7 @@ def Finv(YSS,z):
     
 
     
-def GSS(YSS,y_i):
+def GSS(YSS,y_i,weights):
     '''
     Aggregate conditions for the steady state
     '''
@@ -255,7 +255,7 @@ def GSS(YSS,y_i):
     Uc = c**(-sigma)    
     
     return np.hstack((
-    Kappa_-Xi,Alpha1_-Alpha2_,np.mean(rho3*m*Uc*r - mu*Uc*pi),np.mean(phi1*Uc),np.mean(-(mu*k_*Uc)/Alpha1_ +rho1 + rho3 ),np.mean(phi2-phi1*(1-tau_l)*Uc) , np.mean(k_-K), np.mean(f - c - Gov - K), np.mean(l-nl),Iota    
+    Kappa_-Xi,Alpha1_-Alpha2_,weights.dot(rho3*m*Uc*r - mu*Uc*pi),weights.dot(phi1*Uc),weights.dot(-(mu*k_*Uc)/Alpha1_ +rho1 + rho3 ),weights.dot(phi2-phi1*(1-tau_l)*Uc) , weights.dot(k_-K), weights.dot(f - c - Gov - K), weights.dot(l-nl),Iota    
     ))
     
 

@@ -11,7 +11,7 @@ import numpy as np
 import cPickle
 from IPython.parallel import Reference
 
-N = 50000
+N = 10000
 
 steadystate.calibrate(Para)
         
@@ -20,7 +20,7 @@ steadystate.calibrate(Para)
 Gamma,Z,Y,Shocks,y = {},{},{},{},{}
 Gamma[0] = np.zeros((N,3))
 
-ss = steadystate.steadystate(Gamma[0].T)
+ss = steadystate.steadystate(zip(Gamma[0],np.ones(N)))
 Z[0] = ss.get_Y()[0]
 
 import simulate

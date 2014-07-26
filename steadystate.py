@@ -29,11 +29,12 @@ class steadystate(object):
     '''
     Computes the steady state
     '''
-    def __init__(self,z_i):
+    def __init__(self,dist):
         '''
         Solves for the steady state given a distribution z_i
         '''
-        self.z_i = z_i
+        self.Gamma = zip(*dist)
+        self.Gamma[0],self.Gamma[1] = np.vstack(self.Gamma[0]),np.hstack(self.Gamma[1]) 
         self.solveSteadyState()
         
     def solveSteadyState(self):
@@ -53,8 +54,8 @@ class steadystate(object):
         '''
         For a given vector of aggregates returns the steady state residual
         '''
-        y_i = Finv(Y,self.z_i)
-        return GSS(Y,y_i)
+        y_i = Finv(Y,self.Gamma[0].T)
+        return GSS(Y,y_i,self.Gamma[1])
         
     def get_Y(self):
         '''

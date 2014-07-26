@@ -130,7 +130,7 @@ class approximate(object):
         '''
         self.Gamma = Gamma
         self.approximate_Gamma()
-        self.ss = steadystate.steadystate(self.Gamma_ss.T)
+        self.ss = steadystate.steadystate(self.dist)
 
         #precompute Jacobians and Hessians
         self.get_w = dict_fun(self.get_wf)
@@ -149,7 +149,7 @@ class approximate(object):
         self.quadratic()
         self.join_function()
         
-    def approximate_Gamma(self,k=1000):
+    def approximate_Gamma(self,k=200):
         '''
         Approximate the Gamma distribution
         '''

@@ -35,6 +35,16 @@ def parallel_map(f,X):
         return list(itertools.chain(*data))
     else:
         return None
+        
+def parallel_map_noret(f,X):
+    '''
+    A map function that applies f to each element of X
+    '''
+    s = comm.Get_size() #gets the number of processors
+    nX = len(X)/s
+    r = len(X)%s
+    my_range = slice(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
+    map(f,X[my_range])
     
 def parallel_sum(f,X):
     '''
@@ -46,7 +56,11 @@ def parallel_sum(f,X):
     my_range = slice(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
     my_sum =  sum(itertools.imap(f,X[my_range]))
     sums = comm.gather(my_sum)
-    return sum( comm.bcast(sums) )
+    if rank == 0:
+        res = sum(sums)
+    else:
+        res = None
+    return comm.bcast(res)
     
 def parallel_dict_map(F,l):
     '''
@@ -741,18 +755,18 @@ class approximate(object):
         '''
         for f in self.dy.values():
             if hasattr(f, 'join'):
-                parallel_map(lambda x: f(x[0]),self.dist)
+                parallel_map_noret(lambda x: f(x[0]),self.dist)
                 f.join()
         for f in self.d2y.values():
             if hasattr(f,'join'):       
-                parallel_map(lambda x: f(x[0]),self.dist)
+                parallel_map_noret(lambda x: f(x[0]),self.dist)
                 f.join()
           
         self.dY.join()
         
         for f in self.d2Y.values():
             if hasattr(f,'join'):   
-                parallel_map(lambda x: f(x[0]),self.dist)
+                parallel_map_noret(lambda x: f(x[0]),self.dist)
                 f.join()
         
         

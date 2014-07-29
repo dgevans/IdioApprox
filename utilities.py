@@ -12,7 +12,7 @@ import itertools
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
-
+size = comm.Get_size()
 
 def dict_map(F,l):
     '''
@@ -100,7 +100,8 @@ class dict_fun(object):
         Evaluates at a point z, first checks if z in in dictionary, if so, returns
         stored result.        
         '''
-        hash_z = sha1(np.ascontiguousarray(z)).hexdigest()
+        #hash_z = sha1(np.ascontiguousarray(z)).hexdigest()
+        hash_z = hash(z.tostring())
         if self.fm.has_key(hash_z):
             return self.fm[hash_z]
         else:
@@ -108,14 +109,28 @@ class dict_fun(object):
             self.fm[hash_z] = f
             return f
             
-    def join(self):
+    def join(self,fast=False):
         '''
         Joins the dictionaries across multiple instances 
         '''
-        my_data = self.fm.items()
-        data = comm.gather(my_data)
-        data = comm.bcast(data)
-        self.fm = dict(itertools.chain(*data))
+        if not fast:
+            my_data = self.fm.items()
+            data = comm.gather(my_data)
+            data = comm.bcast(data)
+            self.fm = dict(itertools.chain(*data))
+        else:
+            my_keys = np.hstack(self.fm.keys())
+            n = len(my_keys)
+            
+            shape = self.fm.values()[0].shape
+            my_values = np.ascontiguousarray(np.vstack(self.fm.values()).reshape(np.hstack((-1,shape))))
+            
+            keys = np.empty(size*n,int)
+            values = np.empty(np.hstack((size*n,shape)))
+            comm.Allgather([my_keys,MPI.INT],[keys,MPI.INT])
+            comm.Allgather([my_values,MPI.FLOAT],[values,MPI.FLOAT])
+            
+            self.fm = dict(itertools.izip(keys,values))
 
 def parallel_map(f,X):
     '''

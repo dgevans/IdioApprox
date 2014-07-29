@@ -18,6 +18,7 @@ from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
+size = comm.Get_size()
 
 timing = np.zeros(6) 
 
@@ -55,15 +56,22 @@ def parallel_sum(f,X):
     r = len(X)%s
     my_range = slice(nX*rank+min(rank,r),nX*(rank+1)+min(rank+1,r))
     my_sum =  sum(itertools.imap(f,X[my_range]))
-    sums = comm.gather(my_sum)
-    if rank == 0:
-        res = sum(sums)
-        comm.bcast(res.shape)
+    if r==0:#if evenly split do it fast
+        shape = my_sum.shape
+        my_sum = np.ascontiguousarray(my_sum.reshape(np.hstack((1,shape))))
+        sums = np.empty(np.hstack((s,shape)))
+        comm.Allgather([my_sum,MPI.FLOAT],[sums,MPI.FLOAT])
+        return sums.sum(0)
     else:
-        shape = comm.bcast(None)
-        res = np.empty(shape)
-    comm.Bcast([res,MPI.FLOAT])
-    return res
+        sums = comm.gather(my_sum)
+        if rank == 0:
+            res = sum(sums)
+            comm.bcast(res.shape)
+        else:
+            shape = comm.bcast(None)
+            res = np.empty(shape)
+        comm.Bcast([res,MPI.FLOAT])
+        return res
     
 def parallel_dict_map(F,l):
     '''
@@ -166,15 +174,16 @@ class approximate(object):
         self.quadratic()
         self.join_function()
         
-    def approximate_Gamma(self,k=200):
+    def approximate_Gamma(self,k=500):
         '''
         Approximate the Gamma distribution
         '''
-        if rank == 0:
-            cluster,labels = kmeans2(self.Gamma,k,minit='points')
-            cluster,labels = comm.bcast((cluster,labels))
-        else:
-            cluster,labels = comm.bcast(None)
+        #if rank == 0:
+        #    cluster,labels = kmeans2(self.Gamma,k,minit='points')
+        #    cluster,labels = comm.bcast((cluster,labels))
+        #else:
+        #    cluster,labels = comm.bcast(None)
+        cluster,labels = kmeans2(self.Gamma,self.Gamma[:k,:],minit='matrix')
         weights = (labels-np.arange(k).reshape(-1,1) ==0).sum(1)/float(len(self.Gamma))
         #Para.nomalize(cluster,weights)
         self.Gamma_ss = cluster[labels,:]
@@ -756,21 +765,22 @@ class approximate(object):
         '''
         Joins the data for the dict_maps across functions
         '''
+        fast = len(self.dist)%size == 0
         for f in self.dy.values():
             if hasattr(f, 'join'):
                 parallel_map_noret(lambda x: f(x[0]),self.dist)
-                f.join()
+                f.join(fast)
         for f in self.d2y.values():
             if hasattr(f,'join'):       
                 parallel_map_noret(lambda x: f(x[0]),self.dist)
-                f.join()
+                f.join(fast)
           
-        self.dY.join()
+        self.dY.join(fast)
         
         for f in self.d2Y.values():
             if hasattr(f,'join'):   
                 parallel_map_noret(lambda x: f(x[0]),self.dist)
-                f.join()
+                f.join(fast)
         
         
     def iterate(self,Zbar,quadratic = True):

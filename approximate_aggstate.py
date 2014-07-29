@@ -58,10 +58,13 @@ def parallel_sum(f,X):
     my_sum =  sum(itertools.imap(f,X[my_range]))
     if r==0:#if evenly split do it fast
         shape = my_sum.shape
-        my_sum = np.ascontiguousarray(my_sum.reshape(np.hstack((1,shape))))
-        sums = np.empty(np.hstack((s,shape)))
-        comm.Allgather([my_sum,MPI.FLOAT],[sums,MPI.FLOAT])
-        return sums.sum(0)
+        #my_sum = np.ascontiguousarray(my_sum.reshape(np.hstack((1,shape))))
+        #sums = np.empty(np.hstack((s,shape)))
+        #comm.Allgather([my_sum,MPI.FLOAT],[sums,MPI.FLOAT])
+        #return sums.sum(0)
+        ret = np.empty(shape)
+        comm.Allreduce([my_sum,MPI.DOUBLE],[ret,MPI.DOUBLE])
+        return ret
     else:
         sums = comm.gather(my_sum)
         if rank == 0:
@@ -174,7 +177,7 @@ class approximate(object):
         self.quadratic()
         self.join_function()
         
-    def approximate_Gamma(self,k=500):
+    def approximate_Gamma(self,k=504):
         '''
         Approximate the Gamma distribution
         '''
@@ -307,7 +310,7 @@ class approximate(object):
             self.dZ_Z = dZ_Z
             return (dY_Z()[:nZ]-dZ_Z).flatten()
         
-        self.dZ_Z = root(residual,0.8*np.ones(1)).x.reshape(nZ,nZ)
+        self.dZ_Z = root(residual,0.9*np.ones(1)).x.reshape(nZ,nZ)
         self.dY_Z = dY_Z()
 
         def compute_dy_Z(z_i):
